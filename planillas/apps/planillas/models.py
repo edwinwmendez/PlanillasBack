@@ -1,8 +1,9 @@
 # apps/planillas/models.py
 from django.db import models
 from django.core.exceptions import ValidationError
-from apps.trabajadores.models import Trabajador, Ugel
+from apps.trabajadores.models import Trabajador, RegimenLaboral, TipoServidor, Situacion, Cargo
 from apps.usuarios.models import Beneficiario
+
 
 class Periodo(models.Model):
     mes = models.CharField(max_length=2, blank=True, verbose_name='Mes')
@@ -45,51 +46,6 @@ class Periodo(models.Model):
         verbose_name_plural = 'Períodos'
 
 
-class PlanillaTrabajador(models.Model):
-    total_haberes = models.DecimalField(
-        max_digits=8, decimal_places=2, null=True, blank=True, verbose_name='Total de Haberes'
-    )
-    total_descuentos = models.DecimalField(
-        max_digits=8, decimal_places=2, null=True, blank=True, verbose_name='Total de Descuentos'
-    )
-    essalud = models.DecimalField(
-        max_digits=8, decimal_places=2, null=True, blank=True, verbose_name='ESSALUD'
-    )
-    emitio_boleta = models.SmallIntegerField(
-        null=True, blank=True, verbose_name='Emisión de Boleta')
-    trabajador = models.ForeignKey(Trabajador, on_delete=models.CASCADE, verbose_name='Trabajador', related_name='remuneraciones', null=True, blank=True)
-    tipo_planilla = models.ForeignKey(
-        'planillas.TipoPlanilla', on_delete=models.CASCADE, verbose_name='Tipo de Planilla')
-    periodo = models.ForeignKey(
-        Periodo, on_delete=models.CASCADE, verbose_name='Período')
-    ugel = models.ForeignKey(
-        Ugel, on_delete=models.CASCADE, verbose_name='UGEL')
-
-    def __str__(self):
-        return f'{self.trabajador.persona.nombres} {self.trabajador.persona.paterno} {self.trabajador.persona.materno} - {self.periodo}'
-
-    class Meta:
-        db_table = 'planilla_trabajador'
-        ordering = ['id']
-        verbose_name = 'Planilla del Trabajador'
-        verbose_name_plural = 'Planillas de los Trabajadores'
-
-
-class PlanillaBeneficiario(models.Model):
-    beneficiario = models.ForeignKey(Beneficiario, on_delete=models.CASCADE, verbose_name='Beneficiario')
-    periodo = models.ForeignKey(Periodo, on_delete=models.CASCADE, verbose_name='Período')
-    monto = models.DecimalField(max_digits=8, decimal_places=2, null=True, blank=True, verbose_name='Monto')
-
-    def __str__(self):
-        return f'{self.beneficiario.persona.nombres} {self.beneficiario.persona.paterno} {self.beneficiario.persona.materno} - {self.periodo}'
-
-    class Meta:
-        db_table = 'planilla_beneficiario'
-        ordering = ['id']
-        verbose_name = 'Planilla del Beneficiario'
-        verbose_name_plural = 'Planillas de los Beneficiarios'
-
-
 class TipoPlanilla(models.Model):
     nombre_tipo_planilla = models.CharField(
         max_length=45, blank=True, verbose_name='Nombre de Tipo de Planilla')
@@ -103,6 +59,7 @@ class TipoPlanilla(models.Model):
         ordering = ['nombre_tipo_planilla']
         verbose_name = 'Tipo de Planilla'
         verbose_name_plural = 'Tipos de Planilla'
+
 
 
 class ClasePlanilla(models.Model):
@@ -125,8 +82,7 @@ class ClasePlanilla(models.Model):
 class FuenteFinanciamiento(models.Model):
     nombre_fuente_financiamiento = models.CharField(
         max_length=45, blank=True, verbose_name='Nombre de Fuente de Financiamiento')
-    tipo_planilla = models.ForeignKey(
-        ClasePlanilla, on_delete=models.CASCADE, verbose_name='Clase de Planilla', null=True, blank=True)
+    codigo_fuente_financiamiento = models.CharField(max_length=2, blank=True, verbose_name='Código de Fuente de Financiamiento')
 
     def __str__(self):
         return self.nombre_fuente_financiamiento
@@ -136,3 +92,44 @@ class FuenteFinanciamiento(models.Model):
         ordering = ['nombre_fuente_financiamiento']
         verbose_name = 'Fuente de Financiamiento'
         verbose_name_plural = 'Fuentes de Financiamiento'
+
+
+class Contrato(models.Model):
+    trabajador = models.ForeignKey(Trabajador, on_delete=models.CASCADE, related_name='contratos')
+    cargo = models.ForeignKey(Cargo, on_delete=models.CASCADE, verbose_name='Cargo')
+    fecha_ingreso = models.DateField(null=True, blank=True, verbose_name='Fecha de Ingreso')
+    fecha_cese = models.DateField(null=True, blank=True, verbose_name='Fecha de Cese')
+    documento_contrato = models.CharField(max_length=45, blank=True, verbose_name='Documento de Contrato')
+    documento_cese = models.CharField(max_length=45, blank=True, verbose_name='Documento de Cese')
+    regimen_laboral = models.ForeignKey(RegimenLaboral, on_delete=models.CASCADE, verbose_name='Régimen Laboral')
+    tipo_servidor = models.ForeignKey(TipoServidor, on_delete=models.CASCADE, verbose_name='Tipo de Servidor')
+    clase_planilla = models.ForeignKey(ClasePlanilla, on_delete=models.CASCADE, verbose_name='Clase de Planilla')
+    fuente_financiamiento = models.ForeignKey(FuenteFinanciamiento, on_delete=models.CASCADE, verbose_name='Fuente de Financiamiento')
+    dias_laborados = models.IntegerField(null=True, blank=True, verbose_name='Días Laborados', default=30)
+    situacion = models.ForeignKey(Situacion, on_delete=models.CASCADE, verbose_name='Situación')
+    created = models.DateTimeField(auto_now_add=True)
+    updated = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f'{self.trabajador} - {self.cargo} - {self.fecha_ingreso} - {self.fecha_cese}'
+
+    class Meta:
+        db_table = 'contrato'
+        ordering = ['id']
+        verbose_name = 'Contrato del Trabajador'
+        verbose_name_plural = 'Contratos de los Trabajadores'
+
+
+class PlanillaBeneficiario(models.Model):
+    beneficiario = models.ForeignKey(Beneficiario, on_delete=models.CASCADE, verbose_name='Beneficiario')
+    periodo = models.ForeignKey(Periodo, on_delete=models.CASCADE, verbose_name='Período')
+    monto = models.DecimalField(max_digits=8, decimal_places=2, null=True, blank=True, verbose_name='Monto')
+
+    def __str__(self):
+        return f'{self.beneficiario.persona.nombres} {self.beneficiario.persona.paterno} {self.beneficiario.persona.materno} - {self.periodo}'
+
+    class Meta:
+        db_table = 'planilla_beneficiario'
+        ordering = ['id']
+        verbose_name = 'Planilla del Beneficiario'
+        verbose_name_plural = 'Planillas de los Beneficiarios'

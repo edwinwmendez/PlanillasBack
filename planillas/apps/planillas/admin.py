@@ -1,6 +1,7 @@
 # apps/planillas/admin.py
 from django.contrib import admin
-from .models import Periodo, PlanillaTrabajador, PlanillaBeneficiario, TipoPlanilla, ClasePlanilla, FuenteFinanciamiento
+from .models import Periodo, PlanillaBeneficiario, TipoPlanilla, ClasePlanilla, FuenteFinanciamiento, Contrato
+from apps.transacciones.admin import TransaccionTrabajadorInline
 
 @admin.register(Periodo)
 class PeriodoAdmin(admin.ModelAdmin):
@@ -8,13 +9,6 @@ class PeriodoAdmin(admin.ModelAdmin):
     search_fields = ('mes', 'anio', 'periodo')
     list_filter = ('es_adicional',)
     ordering = ('anio', 'mes')
-
-@admin.register(PlanillaTrabajador)
-class PlanillaTrabajadorAdmin(admin.ModelAdmin):
-    list_display = ('trabajador', 'total_haberes', 'total_descuentos', 'essalud', 'emitio_boleta', 'periodo', 'ugel', 'tipo_planilla')
-    search_fields = ('trabajador__persona__nombres', 'trabajador__persona__paterno', 'trabajador__persona__materno')
-    list_filter = ('periodo', 'ugel', 'tipo_planilla')
-    ordering = ('trabajador', 'periodo')
 
 @admin.register(PlanillaBeneficiario)
 class PlanillaBeneficiarioAdmin(admin.ModelAdmin):
@@ -38,7 +32,18 @@ class ClasePlanillaAdmin(admin.ModelAdmin):
 
 @admin.register(FuenteFinanciamiento)
 class FuenteFinanciamientoAdmin(admin.ModelAdmin):
-    list_display = ('nombre_fuente_financiamiento', 'tipo_planilla')
+    list_display = ('nombre_fuente_financiamiento',)
     search_fields = ('nombre_fuente_financiamiento',)
-    list_filter = ('tipo_planilla',)
+    list_filter = ('nombre_fuente_financiamiento',)
     ordering = ('nombre_fuente_financiamiento',)
+
+# apps/trabajadores/admin.py
+
+@admin.register(Contrato)
+class ContratoAdmin(admin.ModelAdmin):
+    list_display = ('trabajador', 'cargo', 'fecha_ingreso', 'fecha_cese', 'situacion')
+    search_fields = ('trabajador__persona__nombres', 'trabajador__persona__paterno', 'trabajador__persona__materno', 'cargo__nombre_cargo')
+    list_filter = ('situacion', 'cargo', 'fecha_ingreso', 'fecha_cese')
+    ordering = ('trabajador', 'fecha_ingreso')
+    inlines = [TransaccionTrabajadorInline]
+

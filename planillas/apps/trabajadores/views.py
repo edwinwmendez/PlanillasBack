@@ -1,9 +1,9 @@
 from rest_framework import viewsets
 from rest_framework.permissions import IsAuthenticated
-from .models import Trabajador, Cargo, RegimenLaboral, TipoServidor, RegimenPensionario, Afp, Banco
+from .models import Trabajador, Cargo, RegimenLaboral, TipoServidor, RegimenPensionario, Afp, Banco, Situacion
 from .serializers import (
     TrabajadorSerializer, CargoSerializer, RegimenLaboralSerializer,
-    TipoServidorSerializer, RegimenPensionarioSerializer, AFPSerializer, BancoSerializer
+    TipoServidorSerializer, RegimenPensionarioSerializer, AFPSerializer, BancoSerializer, SituacionSerializer
 )
 
 class TrabajadorViewSet(viewsets.ModelViewSet):
@@ -39,4 +39,9 @@ class AFPViewSet(viewsets.ModelViewSet):
 class BancoViewSet(viewsets.ModelViewSet):
     queryset = Banco.objects.all()
     serializer_class = BancoSerializer
+    permission_classes = [IsAuthenticated]
+
+class SituacionViewSet(viewsets.ModelViewSet):
+    queryset = Situacion.objects.all()
+    serializer_class = SituacionSerializer
     permission_classes = [IsAuthenticated]

@@ -1,17 +1,12 @@
 # apps/planillas/views.py
 from rest_framework import viewsets
 from rest_framework.permissions import IsAuthenticated
-from .models import Periodo, PlanillaTrabajador, PlanillaBeneficiario, TipoPlanilla, ClasePlanilla, FuenteFinanciamiento
-from .serializers import PeriodoSerializer, PlanillaTrabajadorSerializer, PlanillaBeneficiarioSerializer, TipoPlanillaSerializer, ClasePlanillaSerializer, FuenteFinanciamientoSerializer
+from .models import Periodo, PlanillaBeneficiario, TipoPlanilla, ClasePlanilla, FuenteFinanciamiento, Contrato
+from .serializers import PeriodoSerializer, PlanillaBeneficiarioSerializer, TipoPlanillaSerializer, ClasePlanillaSerializer, FuenteFinanciamientoSerializer, ContratoSerializer
 
 class PeriodoViewSet(viewsets.ModelViewSet):
     queryset = Periodo.objects.all()
     serializer_class = PeriodoSerializer
-    permission_classes = [IsAuthenticated]
-
-class PlanillaTrabajadorViewSet(viewsets.ModelViewSet):
-    queryset = PlanillaTrabajador.objects.all()
-    serializer_class = PlanillaTrabajadorSerializer
     permission_classes = [IsAuthenticated]
 
 class PlanillaBeneficiarioViewSet(viewsets.ModelViewSet):
@@ -33,3 +28,9 @@ class FuenteFinanciamientoViewSet(viewsets.ModelViewSet):
     queryset = FuenteFinanciamiento.objects.all()
     serializer_class = FuenteFinanciamientoSerializer
     permission_classes = [IsAuthenticated]
+
+class ContratoViewSet(viewsets.ModelViewSet):
+    queryset = Contrato.objects.all()
+    serializer_class = ContratoSerializer
+    permission_classes = [IsAuthenticated]
+

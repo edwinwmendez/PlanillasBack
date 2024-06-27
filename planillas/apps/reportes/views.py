@@ -1,39 +1,65 @@
 # apps/reportes/views.py
 from rest_framework import viewsets
 from rest_framework.response import Response
+from rest_framework.permissions import IsAuthenticated
+from .serializers import TrabajadorSerializer, PlanillaBeneficiarioSerializer
 from apps.trabajadores.models import Trabajador
-from apps.planillas.models import PlanillaTrabajador, PlanillaBeneficiario
-from .serializers import TrabajadorSerializer, PlanillaTrabajadorSerializer, PlanillaBeneficiarioSerializer
+from apps.planillas.models import PlanillaBeneficiario, Contrato
 
 class ReporteRemuneracionActivosViewSet(viewsets.ReadOnlyModelViewSet):
     serializer_class = TrabajadorSerializer
+    permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        return Trabajador.objects.filter(situacion='HAB')
+        if getattr(self, 'swagger_fake_view', False):
+            return Trabajador.objects.none()
+        return Trabajador.objects.filter(contratos__situacion__codigo='HAB').distinct()
 
 class ReportePlanillaBeneficiariosViewSet(viewsets.ReadOnlyModelViewSet):
     serializer_class = PlanillaBeneficiarioSerializer
+    permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
+        if getattr(self, 'swagger_fake_view', False):
+            return PlanillaBeneficiario.objects.none()
         return PlanillaBeneficiario.objects.all()
 
 class ReporteTrabajadoresPorClasePlanillaViewSet(viewsets.ReadOnlyModelViewSet):
     serializer_class = TrabajadorSerializer
+    permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
+        if getattr(self, 'swagger_fake_view', False):
+            return Trabajador.objects.none()
         clase_planilla = self.request.query_params.get('clase_planilla')
-        return Trabajador.objects.filter(cargo__clase_planilla=clase_planilla)
+        if clase_planilla:
+            return Trabajador.objects.filter(contratos__clase_planilla__nombre_clase_planilla=clase_planilla).distinct()
+        return Trabajador.objects.none()
 
 class ReporteTrabajadoresPorFuenteFinanciamientoViewSet(viewsets.ReadOnlyModelViewSet):
     serializer_class = TrabajadorSerializer
+    permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
+        if getattr(self, 'swagger_fake_view', False):
+            return Trabajador.objects.none()
         fuente_financiamiento = self.request.query_params.get('fuente_financiamiento')
-        return Trabajador.objects.filter(cargo__fuente_financiamiento=fuente_financiamiento)
+        if fuente_financiamiento:
+            return Trabajador.objects.filter(contratos__fuente_financiamiento__nombre_fuente_financiamiento=fuente_financiamiento).distinct()
+        return Trabajador.objects.none()
 
 class ReporteTrabajadoresPorVinculoViewSet(viewsets.ReadOnlyModelViewSet):
     serializer_class = TrabajadorSerializer
+    permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
+        if getattr(self, 'swagger_fake_view', False):
+            return Trabajador.objects.none()
         dias_restantes = self.request.query_params.get('dias_restantes')
-        return Trabajador.objects.filter(dias_laborados__lte=dias_restantes)
+        if dias_restantes is not None:
+            try:
+                dias_restantes = int(dias_restantes)
+                return Trabajador.objects.filter(contratos__dias_laborados__lte=dias_restantes).distinct()
+            except ValueError:
+                pass
+        return Trabajador.objects.none()

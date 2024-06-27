@@ -3,7 +3,7 @@ from django.core.exceptions import ValidationError
 from django.db import models
 from django.db.models import Max
 from django.utils.translation import gettext_lazy as _
-from apps.trabajadores.models import Trabajador
+from apps.planillas.models import Contrato
 
 class Transaccion(models.Model):
     TIPO_CHOICES = [
@@ -51,30 +51,17 @@ class Transaccion(models.Model):
         verbose_name = 'Transacción'
         verbose_name_plural = 'Transacciones'
 
-
 class TransaccionTrabajador(models.Model):
-    trabajador = models.ForeignKey(
-        Trabajador, on_delete=models.CASCADE, verbose_name='Trabajador', related_name='transacciones', null=True, blank=True
-    )
-    transaccion = models.ForeignKey(
-        Transaccion, on_delete=models.CASCADE, verbose_name='Transacción'
-    )
-    monto = models.DecimalField(
-        max_digits=8, decimal_places=2, null=True, blank=True, verbose_name='Monto'
-    )
-    periodo_inicial = models.CharField(
-        max_length=6, blank=True, verbose_name='Periodo Inicial'
-    )
-    periodo_final = models.CharField(
-        max_length=6, blank=True, verbose_name='Periodo Final'
-    )
-    correlativo = models.IntegerField(
-        verbose_name='Correlativo', editable=False, null=True, blank=True
-    )
+    contrato = models.ForeignKey(Contrato, on_delete=models.CASCADE, verbose_name='Contrato', related_name='transacciones')
+    transaccion = models.ForeignKey(Transaccion, on_delete=models.CASCADE, verbose_name='Transacción')
+    monto = models.DecimalField(max_digits=8, decimal_places=2, null=True, blank=True, verbose_name='Monto')
+    periodo_inicial = models.CharField(max_length=6, blank=True, verbose_name='Periodo Inicial')
+    periodo_final = models.CharField(max_length=6, blank=True, verbose_name='Periodo Final')
+    correlativo = models.IntegerField(verbose_name='Correlativo', editable=False, null=True, blank=True)
     estado = models.BooleanField(verbose_name='Estado', default=True)
 
     def __str__(self):
-        return f'{self.correlativo} - {self.trabajador} - {self.transaccion.descripcion} - {self.monto}'
+        return f'{self.correlativo} - {self.contrato} - {self.transaccion.descripcion} - {self.monto}'
 
     class Meta:
         db_table = 'transacciones_trabajadores'

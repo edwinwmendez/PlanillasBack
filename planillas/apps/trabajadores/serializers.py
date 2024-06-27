@@ -1,6 +1,6 @@
 # apps/trabajadores/serializers.py
 from rest_framework import serializers
-from .models import Trabajador, Cargo, RegimenLaboral, TipoServidor, RegimenPensionario, Afp, Banco
+from .models import Trabajador, Cargo, RegimenLaboral, TipoServidor, RegimenPensionario, Afp, Banco, Situacion
 
 class TrabajadorSerializer(serializers.ModelSerializer):
     class Meta:
@@ -35,4 +35,9 @@ class AFPSerializer(serializers.ModelSerializer):
 class BancoSerializer(serializers.ModelSerializer):
     class Meta:
         model = Banco
+        fields = '__all__'
+
+class SituacionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Situacion
         fields = '__all__'

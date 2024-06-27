@@ -1,12 +1,12 @@
 # apps/trabajadores/admin.py
 from django.contrib import admin
-from .models import Trabajador, Cargo, RegimenLaboral, TipoServidor, RegimenPensionario, Afp, Banco
+from .models import Trabajador, Cargo, RegimenLaboral, TipoServidor, RegimenPensionario, Afp, Banco, Situacion
 
 @admin.register(Trabajador)
 class TrabajadorAdmin(admin.ModelAdmin):
-    list_display = ('persona', 'ugel', 'cargo', 'situacion', 'fecha_ingreso', 'fecha_cese')
+    list_display = ('persona', 'ugel', 'estado')
     search_fields = ('persona__nombres', 'persona__paterno', 'persona__materno', 'cargo__nombre_cargo')
-    list_filter = ('ugel', 'situacion', 'cargo')
+    list_filter = ('ugel', 'estado')
     ordering = ('persona__paterno', 'persona__materno', 'persona__nombres')
 
 @admin.register(Cargo)
@@ -44,3 +44,9 @@ class BancoAdmin(admin.ModelAdmin):
     list_display = ('nombre_banco',)
     search_fields = ('nombre_banco',)
     ordering = ('nombre_banco',)
+
+@admin.register(Situacion)
+class SituacionAdmin(admin.ModelAdmin):
+    list_display = ('nombre', 'abreviatura', 'codigo', 'created', 'updated')
+    search_fields = ('nombre', 'abreviatura', 'codigo')
+    ordering = ('nombre',)

@@ -11,13 +11,14 @@ class TransaccionTrabajadorSerializer(serializers.ModelSerializer):
     class Meta:
         model = TransaccionTrabajador
         fields = ['codigo', 'descripcion', 'monto']
+        ref_name = 'TransaccionTrabajadorSerializerReportes'
 
 class TrabajadorSerializer(serializers.ModelSerializer):
     transacciones = TransaccionTrabajadorSerializer(many=True, read_only=True)
 
     class Meta:
         model = Trabajador
-        fields = ['id', 'persona', 'situacion', 'fecha_ingreso', 'cargo', 'ugel', 'transacciones']
+        fields = ['id', 'persona', 'estado', 'ugel', 'transacciones']
         ref_name = 'TrabajadorSerializerReportes'
 
 
