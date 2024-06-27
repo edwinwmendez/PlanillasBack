@@ -23,6 +23,7 @@ class User(AbstractUser):
         default=TRABAJADOR,
         verbose_name='Rol'
     )
+    ugel = models.ForeignKey('usuarios.Ugel', on_delete=models.CASCADE, null=True, blank=True, verbose_name='UGEL')
 
     groups = models.ManyToManyField(
         'auth.Group',

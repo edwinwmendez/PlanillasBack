@@ -1,35 +1,73 @@
 # apps/usuarios/models.py
 from django.db import models
-from apps.autenticacion.models import User
 from django.core.exceptions import ValidationError
 from django.utils.translation import gettext_lazy as _
+from apps.autenticacion.models import User
+
+class TipoDocumento(models.Model):
+    codigo = models.CharField(max_length=2, unique=True, verbose_name='Código')
+    descripcion = models.CharField(max_length=50, verbose_name='Descripción')
+
+    def __str__(self):
+        return self.descripcion
+
+    class Meta:
+        db_table = 'tipo_documento'
+        ordering = ['descripcion']
+        verbose_name = 'Tipo de Documento'
+        verbose_name_plural = 'Tipos de Documento'
+
+
+class Sexo(models.Model):
+    codigo = models.CharField(max_length=1, unique=True, verbose_name='Código')
+    descripcion = models.CharField(max_length=20, verbose_name='Descripción')
+
+    def __str__(self):
+        return self.descripcion
+
+    class Meta:
+        db_table = 'sexo'
+        ordering = ['descripcion']
+        verbose_name = 'Sexo'
+        verbose_name_plural = 'Sexos'
+
+
+class TipoDescuento(models.Model):
+    codigo = models.CharField(max_length=2, unique=True, verbose_name='Código')
+    descripcion = models.CharField(max_length=20, verbose_name='Descripción')
+
+    def __str__(self):
+        return self.descripcion
+
+    class Meta:
+        db_table = 'tipo_descuento'
+        ordering = ['descripcion']
+        verbose_name = 'Tipo de Descuento'
+        verbose_name_plural = 'Tipos de Descuento'
+
+
+class TipoBeneficiario(models.Model):
+    codigo = models.CharField(max_length=2, unique=True, verbose_name='Código')
+    descripcion = models.CharField(max_length=20, verbose_name='Descripción')
+
+    def __str__(self):
+        return self.descripcion
+
+    class Meta:
+        db_table = 'tipo_beneficiario'
+        ordering = ['descripcion']
+        verbose_name = 'Tipo de Beneficiario'
+        verbose_name_plural = 'Tipos de Beneficiario'
+
 
 class Persona(models.Model):
     user = models.OneToOneField(
         User, on_delete=models.CASCADE, null=True, blank=True,
         related_name='persona'
     )
-
-    TIPO_DOCUMENTO_CHOICES = [
-        ('DNI', 'DNI'),
-        ('CET', 'Carnet de extranjería'),
-        ('PAS', 'Pasaporte')
-    ]
-
-    SEXO_CHOICES = [
-        ('M', 'Masculino'),
-        ('F', 'Femenino'),
-        ('O', 'Otro')
-    ]
-
-    tipo_documento = models.CharField(
-        max_length=20,
-        choices=TIPO_DOCUMENTO_CHOICES,
-        default='DNI',
-        verbose_name='Tipo de Documento'
-    )
+    tipo_documento = models.ForeignKey(TipoDocumento, on_delete=models.CASCADE, verbose_name='Tipo de Documento')
     numero_documento = models.CharField(
-        max_length=8, unique=True, db_index=True,
+        max_length=12, unique=True, db_index=True,
         verbose_name='Número de Documento'
     )
     paterno = models.CharField(
@@ -40,8 +78,7 @@ class Persona(models.Model):
         max_length=45, blank=True, verbose_name='Nombres')
     fecha_nacimiento = models.DateField(
         null=True, blank=True, verbose_name='Fecha de Nacimiento')
-    sexo = models.CharField(
-        max_length=1, choices=SEXO_CHOICES, verbose_name='Sexo')
+    sexo = models.ForeignKey(Sexo, on_delete=models.CASCADE, verbose_name='Sexo')
     direccion = models.CharField(
         max_length=100, blank=True, verbose_name='Dirección')
     email = models.EmailField(max_length=45, blank=True, verbose_name='Email')
@@ -53,11 +90,11 @@ class Persona(models.Model):
         return f'{self.nombres} {self.paterno} {self.materno}'.strip()
 
     def clean(self):
-        if self.tipo_documento == 'DNI' and len(self.numero_documento) != 8:
+        if self.tipo_documento.codigo == 'DNI' and len(self.numero_documento) != 8:
             raise ValidationError(_('El DNI debe tener 8 caracteres.'))
-        elif self.tipo_documento == 'CET' and len(self.numero_documento) != 9:
+        elif self.tipo_documento.codigo == 'CET' and len(self.numero_documento) != 9:
             raise ValidationError(_('El Carnet de extranjería debe tener 9 caracteres.'))
-        elif self.tipo_documento == 'PAS' and len(self.numero_documento) != 12:
+        elif self.tipo_documento.codigo == 'PAS' and len(self.numero_documento) != 12:
             raise ValidationError(_('El pasaporte debe tener 12 caracteres.'))
 
     def save(self, *args, **kwargs):
@@ -72,11 +109,6 @@ class Persona(models.Model):
 
 
 class Beneficiario(models.Model):
-    TIPO_BENEFICIARIO_CHOICES = [
-        ('JUDICIAL', 'Judicial'),
-        ('TUTOR', 'Tutor'),
-    ]
-
     empleado = models.ForeignKey(
         'trabajadores.Trabajador', on_delete=models.CASCADE, verbose_name='Empleado', related_name='beneficiarios'
     )
@@ -90,20 +122,10 @@ class Beneficiario(models.Model):
         max_length=45, blank=True, verbose_name='Documento de Descuento'
     )
     numero_cuenta = models.CharField(
-        max_length=11, blank=True, verbose_name='Número de Cuenta'
+        max_length=20, blank=True, verbose_name='Número de Cuenta'
     )
-    tipo_beneficiario = models.CharField(
-        max_length=10, choices=TIPO_BENEFICIARIO_CHOICES, default='JUDICIAL', verbose_name='Tipo de Beneficiario'
-    )
-
-    TIPO_DESCUENTO_CHOICES = [
-        ('MF', 'Monto Fijo'),
-        ('DP', 'Descuento Porcentual')
-    ]
-
-    tipo_descuento = models.CharField(
-        max_length=2, choices=TIPO_DESCUENTO_CHOICES, default='MF', verbose_name='Tipo de Descuento'
-    )
+    tipo_beneficiario = models.ForeignKey(TipoBeneficiario, on_delete=models.CASCADE, default=1, verbose_name='Tipo de Beneficiario')
+    tipo_descuento = models.ForeignKey(TipoDescuento, on_delete=models.CASCADE, default=1, verbose_name='Tipo de Descuento')
     descuento_fijo = models.DecimalField(
         max_digits=8, decimal_places=2, null=True, blank=True, verbose_name='Descuento Fijo'
     )
@@ -135,9 +157,9 @@ class Beneficiario(models.Model):
         verbose_name_plural = 'Beneficiarios'
 
     def clean(self):
-        if self.tipo_descuento == 'MF' and not self.descuento_fijo:
+        if self.tipo_descuento.codigo == 'MF' and not self.descuento_fijo:
             raise ValidationError('Debe especificar un monto fijo para el descuento.')
-        if self.tipo_descuento == 'DP' and not self.porcentaje_descuento:
+        if self.tipo_descuento.codigo == 'DP' and not self.porcentaje_descuento:
             raise ValidationError('Debe especificar un porcentaje para el descuento.')
 
     def save(self, *args, **kwargs):

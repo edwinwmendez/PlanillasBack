@@ -11,6 +11,12 @@ class TrabajadorViewSet(viewsets.ModelViewSet):
     serializer_class = TrabajadorSerializer
     permission_classes = [IsAuthenticated]
 
+    def get_queryset(self):
+        user = self.request.user
+        if user.role == 'admin_sistema':
+            return Trabajador.objects.all()
+        return Trabajador.objects.filter(ugel=user.ugel)
+
 class CargoViewSet(viewsets.ModelViewSet):
     queryset = Cargo.objects.all()
     serializer_class = CargoSerializer

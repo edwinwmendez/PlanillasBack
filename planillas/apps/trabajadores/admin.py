@@ -4,9 +4,9 @@ from .models import Trabajador, Cargo, RegimenLaboral, TipoServidor, RegimenPens
 
 @admin.register(Trabajador)
 class TrabajadorAdmin(admin.ModelAdmin):
-    list_display = ('persona', 'ugel', 'estado')
+    list_display = ('persona', 'estado')
     search_fields = ('persona__nombres', 'persona__paterno', 'persona__materno', 'cargo__nombre_cargo')
-    list_filter = ('ugel', 'estado')
+    list_filter = ('estado',)
     ordering = ('persona__paterno', 'persona__materno', 'persona__nombres')
 
 @admin.register(Cargo)

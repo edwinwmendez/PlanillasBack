@@ -10,7 +10,7 @@ class UserAdmin(BaseUserAdmin):
         ('Personal info', {'fields': ('first_name', 'last_name', 'email')}),
         ('Permissions', {'fields': ('is_active', 'is_staff', 'is_superuser', 'groups', 'user_permissions')}),
         ('Important dates', {'fields': ('last_login', 'date_joined')}),
-        ('Additional info', {'fields': ('role',)}),
+        ('Additional info', {'fields': ('role', 'ugel')}),
     )
 
     add_fieldsets = (
@@ -25,10 +25,10 @@ class UserAdmin(BaseUserAdmin):
             'fields': ('is_active', 'is_staff', 'is_superuser', 'groups', 'user_permissions')
         }),
         ('Additional info', {
-            'fields': ('role',)
+            'fields': ('role', 'ugel')
         }),
     )
 
-    list_display = ('username', 'email', 'first_name', 'last_name', 'is_staff', 'role')
+    list_display = ('username', 'email', 'first_name', 'last_name', 'is_staff', 'role', 'ugel')
     search_fields = ('username', 'first_name', 'last_name', 'email')
     ordering = ('username',)

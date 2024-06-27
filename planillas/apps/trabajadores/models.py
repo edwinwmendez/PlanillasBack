@@ -1,9 +1,8 @@
 # apps/trabajadores/models.py
 from django.db import models
-from apps.usuarios.models import Persona, Ugel
+from apps.usuarios.models import Persona
 
 class Trabajador(models.Model):
-    ugel = models.ForeignKey(Ugel, on_delete=models.CASCADE, verbose_name='UGEL')
     persona = models.ForeignKey(Persona, on_delete=models.CASCADE, verbose_name='Persona', related_name='empleados')
     tiempo_servicios = models.CharField(max_length=6, blank=True, verbose_name='Tiempo de Servicios')
     regimen_pensionario = models.ForeignKey('trabajadores.RegimenPensionario', on_delete=models.CASCADE, verbose_name='Régimen Pensionario')
@@ -28,7 +27,6 @@ class Trabajador(models.Model):
         verbose_name_plural = 'Trabajadores'
         indexes = [
             models.Index(fields=['persona'], name='persona_idx'),
-            models.Index(fields=['ugel'], name='ugel_idx'),
         ]
 
 class Cargo(models.Model):
