@@ -2,99 +2,75 @@
 from django.db import models
 from django.core.exceptions import ValidationError
 from django.utils.translation import gettext_lazy as _
-from apps.autenticacion.models import User
+from apps.configuracion.models import TipoDocumento, Sexo, TipoDescuento, TipoBeneficiario, Ugel, EstadoCivil
+from django.contrib.auth.models import AbstractUser
 
-class TipoDocumento(models.Model):
-    codigo = models.CharField(max_length=2, unique=True, verbose_name='Código')
-    descripcion = models.CharField(max_length=50, verbose_name='Descripción')
+class User(AbstractUser):
+    ADMINISTRADOR_DEL_SISTEMA = 'admin_sistema'
+    ADMINISTRADOR_UGEL = 'admin_ugel'
+    TECNICO_DE_PROCESOS = 'tecnico_procesos'
+    TECNICO_DE_PLANILLAS = 'tecnico_planillas'
+    TRABAJADOR = 'trabajador'
 
-    def __str__(self):
-        return self.descripcion
+    ROLE_CHOICES = [
+        (ADMINISTRADOR_DEL_SISTEMA, 'Administrador del Sistema'),
+        (ADMINISTRADOR_UGEL, 'Administrador UGEL'),
+        (TECNICO_DE_PROCESOS, 'Técnico de Procesos'),
+        (TECNICO_DE_PLANILLAS, 'Técnico de Planillas'),
+        (TRABAJADOR, 'Trabajador'),
+    ]
 
-    class Meta:
-        db_table = 'tipo_documento'
-        ordering = ['descripcion']
-        verbose_name = 'Tipo de Documento'
-        verbose_name_plural = 'Tipos de Documento'
+    role = models.CharField(
+        max_length=20,
+        choices=ROLE_CHOICES,
+        default=TRABAJADOR,
+        verbose_name='Rol'
+    )
+    ugel = models.ForeignKey(Ugel, on_delete=models.CASCADE, null=True, blank=True, verbose_name='UGEL')
+    is_active = models.BooleanField(default=True, verbose_name='Activo')
 
-
-class Sexo(models.Model):
-    codigo = models.CharField(max_length=1, unique=True, verbose_name='Código')
-    descripcion = models.CharField(max_length=20, verbose_name='Descripción')
-
-    def __str__(self):
-        return self.descripcion
-
-    class Meta:
-        db_table = 'sexo'
-        ordering = ['descripcion']
-        verbose_name = 'Sexo'
-        verbose_name_plural = 'Sexos'
-
-
-class TipoDescuento(models.Model):
-    codigo = models.CharField(max_length=2, unique=True, verbose_name='Código')
-    descripcion = models.CharField(max_length=20, verbose_name='Descripción')
-
-    def __str__(self):
-        return self.descripcion
-
-    class Meta:
-        db_table = 'tipo_descuento'
-        ordering = ['descripcion']
-        verbose_name = 'Tipo de Descuento'
-        verbose_name_plural = 'Tipos de Descuento'
-
-
-class TipoBeneficiario(models.Model):
-    codigo = models.CharField(max_length=2, unique=True, verbose_name='Código')
-    descripcion = models.CharField(max_length=20, verbose_name='Descripción')
-
-    def __str__(self):
-        return self.descripcion
-
-    class Meta:
-        db_table = 'tipo_beneficiario'
-        ordering = ['descripcion']
-        verbose_name = 'Tipo de Beneficiario'
-        verbose_name_plural = 'Tipos de Beneficiario'
+    groups = models.ManyToManyField(
+        'auth.Group',
+        related_name='custom_user_set',
+        blank=True,
+        help_text='Los grupos a los que pertenece este usuario. Un usuario obtendrá todos los permisos concedidos a cada uno de sus grupos.',
+        verbose_name='grupos',
+    )
+    user_permissions = models.ManyToManyField(
+        'auth.Permission',
+        related_name='custom_user_set',
+        blank=True,
+        help_text='Permisos específicos para este usuario.',
+        verbose_name='permisos de usuario',
+    )
 
 
 class Persona(models.Model):
-    user = models.OneToOneField(
-        User, on_delete=models.CASCADE, null=True, blank=True,
-        related_name='persona'
-    )
+    user = models.OneToOneField(User, on_delete=models.CASCADE, null=True, blank=True,related_name='persona')
     tipo_documento = models.ForeignKey(TipoDocumento, on_delete=models.CASCADE, verbose_name='Tipo de Documento')
-    numero_documento = models.CharField(
-        max_length=12, unique=True, db_index=True,
-        verbose_name='Número de Documento'
-    )
-    paterno = models.CharField(
-        max_length=45, blank=True, verbose_name='Apellido Paterno')
-    materno = models.CharField(
-        max_length=45, blank=True, verbose_name='Apellido Materno')
-    nombres = models.CharField(
-        max_length=45, blank=True, verbose_name='Nombres')
-    fecha_nacimiento = models.DateField(
-        null=True, blank=True, verbose_name='Fecha de Nacimiento')
+    numero_documento = models.CharField(max_length=12, unique=True, db_index=True,verbose_name='Número de Documento')
+    apellido_paterno = models.CharField(max_length=45, blank=True, verbose_name='Apellido Paterno')
+    apellido_materno = models.CharField(max_length=45, blank=True, verbose_name='Apellido Materno')
+    nombres = models.CharField(max_length=45, blank=True, verbose_name='Nombres')
+    fecha_nacimiento = models.DateField(null=True, blank=True, verbose_name='Fecha de Nacimiento')
     sexo = models.ForeignKey(Sexo, on_delete=models.CASCADE, verbose_name='Sexo')
-    direccion = models.CharField(
-        max_length=100, blank=True, verbose_name='Dirección')
+    estado_civil = models.ForeignKey(EstadoCivil, on_delete=models.CASCADE, verbose_name='Estado Civil')
+    direccion = models.CharField(max_length=100, blank=True, verbose_name='Dirección')
     email = models.EmailField(max_length=45, blank=True, verbose_name='Email')
+    telefono = models.CharField(max_length=9, blank=True, verbose_name='Teléfono')
 
     def __str__(self):
-        return f'{self.nombres} {self.paterno} {self.materno}'
+        return f'{self.nombres} {self.apellido_paterno} {self.apellido_materno}'
 
     def get_full_name(self):
-        return f'{self.nombres} {self.paterno} {self.materno}'.strip()
+        return f'{self.nombres} {self.apellido_paterno} {self.apellido_materno}'.strip()
 
     def clean(self):
-        if self.tipo_documento.codigo == 'DNI' and len(self.numero_documento) != 8:
+        if self.tipo_documento.codigo_tipo_documento == 'DNI' and len(self.numero_documento) != 8:
             raise ValidationError(_('El DNI debe tener 8 caracteres.'))
-        elif self.tipo_documento.codigo == 'CET' and len(self.numero_documento) != 9:
+        elif self.tipo_documento.codigo_tipo_documento == 'CET' and len(self.numero_documento) != 9:
             raise ValidationError(_('El Carnet de extranjería debe tener 9 caracteres.'))
-        elif self.tipo_documento.codigo == 'PAS' and len(self.numero_documento) != 12:
+        elif self.tipo_documento.codigo_tipo_documento == 'PAS' and len(self.numero_documento) != 12:
             raise ValidationError(_('El pasaporte debe tener 12 caracteres.'))
 
     def save(self, *args, **kwargs):
@@ -103,13 +79,13 @@ class Persona(models.Model):
 
     class Meta:
         db_table = 'persona'
-        ordering = ['paterno', 'materno', 'nombres']
+        ordering = ['apellido_paterno', 'apellido_materno', 'nombres']
         verbose_name = 'Persona'
         verbose_name_plural = 'Personas'
 
 
 class Beneficiario(models.Model):
-    empleado = models.ForeignKey(
+    trabajador = models.ForeignKey(
         'trabajadores.Trabajador', on_delete=models.CASCADE, verbose_name='Empleado', related_name='beneficiarios'
     )
     persona = models.ForeignKey(
@@ -144,7 +120,7 @@ class Beneficiario(models.Model):
     created = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)
     banco = models.ForeignKey(
-        'trabajadores.Banco', on_delete=models.CASCADE, verbose_name='Banco'
+        'configuracion.Banco', on_delete=models.CASCADE, verbose_name='Banco'
     )
 
     def __str__(self):
@@ -165,19 +141,3 @@ class Beneficiario(models.Model):
     def save(self, *args, **kwargs):
         self.clean()
         super().save(*args, **kwargs)
-
-
-class Ugel(models.Model):
-    nombre_ugel = models.CharField(
-        max_length=100, verbose_name='Nombre de Ugel')
-    nombre_corto = models.CharField(
-        max_length=25, verbose_name='Nombre Corto', null=True, blank=True)
-
-    def __str__(self):
-        return self.nombre_corto
-
-    class Meta:
-        db_table = 'ugel'
-        ordering = ['nombre_ugel']
-        verbose_name = 'UGEL'
-        verbose_name_plural = 'UGELs'

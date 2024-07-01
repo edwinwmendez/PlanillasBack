@@ -30,6 +30,15 @@
 │            ├── tests.py
 │            ├── urls.py
 │            └── views.py
+│        ├── configuracion/
+│            ├── models.py
+│            ├── serializers.py
+│            ├── __init__.py
+│            ├── apps.py
+│            ├── admin.py
+│            ├── tests.py
+│            ├── urls.py
+│            └── views.py
 │        ├── usuarios/
 │            ├── models.py
 │            ├── serializers.py
@@ -40,15 +49,6 @@
 │            ├── urls.py
 │            └── views.py
 │        ├── trabajadores/
-│            ├── models.py
-│            ├── serializers.py
-│            ├── __init__.py
-│            ├── apps.py
-│            ├── admin.py
-│            ├── tests.py
-│            ├── urls.py
-│            └── views.py
-│        ├── autenticacion/
 │            ├── models.py
 │            ├── serializers.py
 │            ├── __init__.py
@@ -157,7 +157,6 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'rest_framework',
     'drf_yasg',
-    'apps.autenticacion',
     'apps.usuarios',
     'apps.trabajadores',
     'apps.transacciones',
@@ -165,6 +164,7 @@ INSTALLED_APPS = [
     'apps.reportes',
     'apps.procesos',
     'apps.auditoria',
+    'apps.configuracion',
 ]
 
 MIDDLEWARE = [
@@ -266,7 +266,8 @@ REST_FRAMEWORK = {
         'rest_framework.permissions.IsAuthenticated',
     ),
 }
-```
+
+AUTH_USER_MODEL = 'usuarios.User'```
 
 **Ruta: /Volumes/Datos/Trabajo/Sistemas/Planilla/backend/planillas/planillas/urls.py**
 ```Python
@@ -291,6 +292,7 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/auth/', include('rest_framework.urls')),
     path('api/autenticacion/', include('apps.autenticacion.urls')),
+    path('api/configuracion/', include('apps.configuracion.urls')),
     path('api/usuarios/', include('apps.usuarios.urls')),
     path('api/trabajadores/', include('apps.trabajadores.urls')),
     path('api/transacciones/', include('apps.transacciones.urls')),
@@ -410,7 +412,7 @@ from django.db import models
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
-from apps.planillas.models import Periodo, TipoPlanilla
+from apps.configuracion.models import Periodo, TipoPlanilla
 from apps.trabajadores.models import Trabajador
 from apps.planillas.models import Contrato
 from apps.transacciones.models import TransaccionTrabajador
@@ -492,7 +494,7 @@ class TrabajadorSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Trabajador
-        fields = ['id', 'persona', 'estado', 'ugel', 'transacciones']
+        fields = ['id', 'persona', 'estado', 'transacciones']
         ref_name = 'TrabajadorSerializerReportes'
 
 
@@ -630,13 +632,40 @@ class ReporteTrabajadoresPorVinculoViewSet(viewsets.ReadOnlyModelViewSet):
         return Trabajador.objects.none()
 ```
 
-**Ruta: /Volumes/Datos/Trabajo/Sistemas/Planilla/backend/planillas/apps/usuarios/models.py**
+**Ruta: /Volumes/Datos/Trabajo/Sistemas/Planilla/backend/planillas/apps/configuracion/models.py**
 ```Python
-# apps/usuarios/models.py
+# apps/configuracion/models.py
 from django.db import models
 from django.core.exceptions import ValidationError
 from django.utils.translation import gettext_lazy as _
-from apps.autenticacion.models import User
+
+
+class Haber(models.Model):
+    codigo = models.CharField(max_length=10, unique=True, verbose_name='Código')
+    descripcion = models.CharField(max_length=255, verbose_name='Descripción')
+    afecta_cargas_sociales = models.BooleanField(default=False, verbose_name='Afecta a Cargas Sociales')
+    activo = models.BooleanField(default=True, verbose_name='Activo')
+
+    def __str__(self):
+        return self.descripcion
+
+class Descuento(models.Model):
+    codigo = models.CharField(max_length=10, unique=True, verbose_name='Código')
+    descripcion = models.CharField(max_length=255, verbose_name='Descripción')
+    afecta_cargas_sociales = models.BooleanField(default=False, verbose_name='Afecta a Cargas Sociales')
+    descuento_ley = models.BooleanField(default=False, verbose_name='Descuento de Ley')
+    descuento_judicial = models.BooleanField(default=False, verbose_name='Descuento Judicial')
+    regimen_pensionario = models.BooleanField(default=False, verbose_name='Régimen Pensionario')
+    impuestos = models.BooleanField(default=False, verbose_name='Impuestos')
+    activo = models.BooleanField(default=True, verbose_name='Activo')
+
+    def __str__(self):
+        return self.descripcion
+
+# Mover los siguientes modelos aquí de sus respectivos archivos:
+# Ugel, RegimenLaboral, RegimenPensionario, Afp, ClasePlanilla,
+# FuenteFinanciamiento, Cargo, TipoServidor, Banco, TipoDocumento,
+# Sexo, TipoDescuento, Beneficiario, Periodo
 
 class TipoDocumento(models.Model):
     codigo = models.CharField(max_length=2, unique=True, verbose_name='Código')
@@ -694,113 +723,6 @@ class TipoBeneficiario(models.Model):
         verbose_name_plural = 'Tipos de Beneficiario'
 
 
-class Persona(models.Model):
-    user = models.OneToOneField(
-        User, on_delete=models.CASCADE, null=True, blank=True,
-        related_name='persona'
-    )
-    tipo_documento = models.ForeignKey(TipoDocumento, on_delete=models.CASCADE, verbose_name='Tipo de Documento')
-    numero_documento = models.CharField(
-        max_length=12, unique=True, db_index=True,
-        verbose_name='Número de Documento'
-    )
-    paterno = models.CharField(
-        max_length=45, blank=True, verbose_name='Apellido Paterno')
-    materno = models.CharField(
-        max_length=45, blank=True, verbose_name='Apellido Materno')
-    nombres = models.CharField(
-        max_length=45, blank=True, verbose_name='Nombres')
-    fecha_nacimiento = models.DateField(
-        null=True, blank=True, verbose_name='Fecha de Nacimiento')
-    sexo = models.ForeignKey(Sexo, on_delete=models.CASCADE, verbose_name='Sexo')
-    direccion = models.CharField(
-        max_length=100, blank=True, verbose_name='Dirección')
-    email = models.EmailField(max_length=45, blank=True, verbose_name='Email')
-
-    def __str__(self):
-        return f'{self.nombres} {self.paterno} {self.materno}'
-
-    def get_full_name(self):
-        return f'{self.nombres} {self.paterno} {self.materno}'.strip()
-
-    def clean(self):
-        if self.tipo_documento.codigo == 'DNI' and len(self.numero_documento) != 8:
-            raise ValidationError(_('El DNI debe tener 8 caracteres.'))
-        elif self.tipo_documento.codigo == 'CET' and len(self.numero_documento) != 9:
-            raise ValidationError(_('El Carnet de extranjería debe tener 9 caracteres.'))
-        elif self.tipo_documento.codigo == 'PAS' and len(self.numero_documento) != 12:
-            raise ValidationError(_('El pasaporte debe tener 12 caracteres.'))
-
-    def save(self, *args, **kwargs):
-        self.clean()
-        super().save(*args, **kwargs)
-
-    class Meta:
-        db_table = 'persona'
-        ordering = ['paterno', 'materno', 'nombres']
-        verbose_name = 'Persona'
-        verbose_name_plural = 'Personas'
-
-
-class Beneficiario(models.Model):
-    empleado = models.ForeignKey(
-        'trabajadores.Trabajador', on_delete=models.CASCADE, verbose_name='Empleado', related_name='beneficiarios'
-    )
-    persona = models.ForeignKey(
-        Persona, on_delete=models.CASCADE, verbose_name='Persona'
-    )
-    relacion_trabajador = models.CharField(
-        max_length=45, blank=True, verbose_name='Relación del Trabajador'
-    )
-    documento_descuento = models.CharField(
-        max_length=45, blank=True, verbose_name='Documento de Descuento'
-    )
-    numero_cuenta = models.CharField(
-        max_length=20, blank=True, verbose_name='Número de Cuenta'
-    )
-    tipo_beneficiario = models.ForeignKey(TipoBeneficiario, on_delete=models.CASCADE, default=1, verbose_name='Tipo de Beneficiario')
-    tipo_descuento = models.ForeignKey(TipoDescuento, on_delete=models.CASCADE, default=1, verbose_name='Tipo de Descuento')
-    descuento_fijo = models.DecimalField(
-        max_digits=8, decimal_places=2, null=True, blank=True, verbose_name='Descuento Fijo'
-    )
-    porcentaje_descuento = models.IntegerField(
-        null=True, blank=True, verbose_name='Porcentaje de Descuento'
-    )
-    fecha_inicio = models.DateField(
-        null=True, blank=True, verbose_name='Fecha de Inicio'
-    )
-    fecha_fin = models.DateField(
-        null=True, blank=True, verbose_name='Fecha de Fin'
-    )
-    estado = models.BooleanField(
-        verbose_name='Estado', default=True, null=True, blank=True
-    )
-    created = models.DateTimeField(auto_now_add=True)
-    updated = models.DateTimeField(auto_now=True)
-    banco = models.ForeignKey(
-        'trabajadores.Banco', on_delete=models.CASCADE, verbose_name='Banco'
-    )
-
-    def __str__(self):
-        return f'{self.persona.nombres} {self.persona.paterno} {self.persona.materno}'
-
-    class Meta:
-        db_table = 'beneficiario'
-        ordering = ['id']
-        verbose_name = 'Beneficiario'
-        verbose_name_plural = 'Beneficiarios'
-
-    def clean(self):
-        if self.tipo_descuento.codigo == 'MF' and not self.descuento_fijo:
-            raise ValidationError('Debe especificar un monto fijo para el descuento.')
-        if self.tipo_descuento.codigo == 'DP' and not self.porcentaje_descuento:
-            raise ValidationError('Debe especificar un porcentaje para el descuento.')
-
-    def save(self, *args, **kwargs):
-        self.clean()
-        super().save(*args, **kwargs)
-
-
 class Ugel(models.Model):
     nombre_ugel = models.CharField(
         max_length=100, verbose_name='Nombre de Ugel')
@@ -815,147 +737,143 @@ class Ugel(models.Model):
         ordering = ['nombre_ugel']
         verbose_name = 'UGEL'
         verbose_name_plural = 'UGELs'
-```
-
-**Ruta: /Volumes/Datos/Trabajo/Sistemas/Planilla/backend/planillas/apps/usuarios/serializers.py**
-```Python
-# apps/usuarios/serializers.py
-from rest_framework import serializers
-from .models import Persona, Beneficiario, Ugel
-
-class PersonaSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Persona
-        fields = ['id', 'user', 'tipo_documento', 'numero_documento', 'paterno', 'materno', 'nombres', 'fecha_nacimiento', 'sexo', 'direccion', 'email']
-
-class BeneficiarioSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Beneficiario
-        fields = ['id', 'empleado', 'persona', 'relacion_trabajador', 'documento_descuento', 'numero_cuenta', 'tipo_beneficiario', 'tipo_descuento', 'descuento_fijo', 'porcentaje_descuento', 'fecha_inicio', 'fecha_fin', 'estado', 'banco', 'created', 'updated']
-
-class UgelSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Ugel
-        fields = ['id', 'nombre_ugel', 'nombre_corto']
-```
-
-**Ruta: /Volumes/Datos/Trabajo/Sistemas/Planilla/backend/planillas/apps/usuarios/__init__.py**
-```Python
-```
-
-**Ruta: /Volumes/Datos/Trabajo/Sistemas/Planilla/backend/planillas/apps/usuarios/apps.py**
-```Python
-from django.apps import AppConfig
 
 
-class UsuariosConfig(AppConfig):
-    default_auto_field = 'django.db.models.BigAutoField'
-    name = 'apps.usuarios'```
-
-**Ruta: /Volumes/Datos/Trabajo/Sistemas/Planilla/backend/planillas/apps/usuarios/admin.py**
-```Python
-# apps/usuarios/admin.py
-from django.contrib import admin
-from .models import Persona, Beneficiario, Ugel
-
-@admin.register(Persona)
-class PersonaAdmin(admin.ModelAdmin):
-    list_display = ['nombres', 'paterno', 'materno', 'tipo_documento', 'numero_documento', 'email']
-    search_fields = ['nombres', 'paterno', 'materno', 'numero_documento']
-    list_filter = ['tipo_documento', 'sexo']
-    ordering = ['paterno', 'materno', 'nombres']
-
-@admin.register(Beneficiario)
-class BeneficiarioAdmin(admin.ModelAdmin):
-    list_display = ['persona', 'empleado', 'tipo_beneficiario', 'tipo_descuento', 'descuento_fijo', 'porcentaje_descuento', 'estado']
-    search_fields = ['persona__nombres', 'persona__paterno', 'persona__materno', 'empleado__persona__nombres', 'empleado__persona__paterno', 'empleado__persona__materno']
-    list_filter = ['tipo_beneficiario', 'tipo_descuento', 'estado']
-    ordering = ['persona', 'empleado']
-
-@admin.register(Ugel)
-class UgelAdmin(admin.ModelAdmin):
-    list_display = ['nombre_ugel', 'nombre_corto']
-    search_fields = ['nombre_ugel', 'nombre_corto']
-    ordering = ['nombre_ugel']
-```
-
-**Ruta: /Volumes/Datos/Trabajo/Sistemas/Planilla/backend/planillas/apps/usuarios/tests.py**
-```Python
-from django.test import TestCase
-
-# Create your tests here.
-```
-
-**Ruta: /Volumes/Datos/Trabajo/Sistemas/Planilla/backend/planillas/apps/usuarios/urls.py**
-```Python
-# apps/usuarios/urls.py
-from rest_framework.routers import DefaultRouter
-from .views import PersonaViewSet, BeneficiarioViewSet, UgelViewSet
-
-router = DefaultRouter()
-router.register(r'personas', PersonaViewSet)
-router.register(r'beneficiarios', BeneficiarioViewSet)
-router.register(r'ugels', UgelViewSet)
-
-urlpatterns = router.urls
-```
-
-**Ruta: /Volumes/Datos/Trabajo/Sistemas/Planilla/backend/planillas/apps/usuarios/views.py**
-```Python
-# apps/usuarios/views.py
-from rest_framework import viewsets
-from rest_framework.permissions import IsAuthenticated
-from .models import Persona, Beneficiario, Ugel
-from .serializers import PersonaSerializer, BeneficiarioSerializer, UgelSerializer
-
-class PersonaViewSet(viewsets.ModelViewSet):
-    queryset = Persona.objects.all()
-    serializer_class = PersonaSerializer
-    permission_classes = [IsAuthenticated]
-
-class BeneficiarioViewSet(viewsets.ModelViewSet):
-    queryset = Beneficiario.objects.all()
-    serializer_class = BeneficiarioSerializer
-    permission_classes = [IsAuthenticated]
-
-class UgelViewSet(viewsets.ModelViewSet):
-    queryset = Ugel.objects.all()
-    serializer_class = UgelSerializer
-    permission_classes = [IsAuthenticated]
-```
-
-**Ruta: /Volumes/Datos/Trabajo/Sistemas/Planilla/backend/planillas/apps/trabajadores/models.py**
-```Python
-# apps/trabajadores/models.py
-from django.db import models
-from apps.usuarios.models import Persona
-
-class Trabajador(models.Model):
-    persona = models.ForeignKey(Persona, on_delete=models.CASCADE, verbose_name='Persona', related_name='empleados')
-    tiempo_servicios = models.CharField(max_length=6, blank=True, verbose_name='Tiempo de Servicios')
-    regimen_pensionario = models.ForeignKey('trabajadores.RegimenPensionario', on_delete=models.CASCADE, verbose_name='Régimen Pensionario')
-    afp = models.ForeignKey('trabajadores.Afp', on_delete=models.CASCADE, verbose_name='AFP')
-    cuspp = models.CharField(max_length=12, blank=True, verbose_name='CUSPP')
-    fecha_afiliacion = models.DateField(null=True, blank=True, verbose_name='Fecha de Afiliación')
-    fecha_devengue = models.DateField(null=True, blank=True, verbose_name='Fecha de Devengue')
-    banco = models.ForeignKey('trabajadores.Banco', on_delete=models.CASCADE, verbose_name='Banco')
-    numero_cuenta = models.CharField(max_length=45, blank=True, verbose_name='Número de Cuenta')
-    ruc = models.CharField(max_length=11, blank=True, verbose_name='RUC')
-    estado = models.BooleanField(verbose_name='Estado', default=True, null=True, blank=True)
-    created = models.DateTimeField(auto_now_add=True)
-    updated = models.DateTimeField(auto_now=True)
+class Periodo(models.Model):
+    mes = models.CharField(max_length=2, blank=True, verbose_name='Mes')
+    anio = models.CharField(max_length=4, blank=True, verbose_name='Año')
+    periodo = models.CharField(
+        max_length=6, blank=True, verbose_name='Periodo', editable=False)
+    es_adicional = models.BooleanField(
+        default=False, verbose_name='¿Es adicional?')
+    periodo_actual = models.CharField(
+        max_length=6, blank=True, verbose_name='Periodo Actual', editable=False, null=True, default=None)
 
     def __str__(self):
-        return f'{self.persona.nombres} {self.persona.paterno} {self.persona.materno}'
+        return f'{self.periodo} - {self.mes}/{self.anio}'
+
+    def clean(self):
+        if not self.periodo:
+            self.periodo = f'{self.anio}{self.mes}'
+        if not self.es_adicional and Periodo.objects.filter(mes=self.mes, anio=self.anio, es_adicional=False).exists():
+            raise ValidationError('Ya existe un período principal para este mes y año.')
+
+    def save(self, *args, **kwargs):
+        self.clean()
+        if not self.periodo:
+            self.periodo = f'{self.anio}{self.mes}'
+
+        if not self.es_adicional:
+            last_principal_periodo = Periodo.objects.filter(
+                es_adicional=False).order_by('-id').first()
+            self.periodo_actual = last_principal_periodo.periodo if last_principal_periodo else None
+
+        if not self.es_adicional and Periodo.objects.filter(mes=self.mes, anio=self.anio, es_adicional=False).exists():
+            raise ValidationError('Ya existe un período principal para este mes y año.')
+
+        super().save(*args, **kwargs)
 
     class Meta:
-        db_table = 'trabajador'
-        ordering = ['id']
-        verbose_name = 'Trabajador'
-        verbose_name_plural = 'Trabajadores'
-        indexes = [
-            models.Index(fields=['persona'], name='persona_idx'),
-        ]
+        db_table = 'periodo'
+        ordering = ['anio', 'mes']
+        verbose_name = 'Período'
+        verbose_name_plural = 'Períodos'
+
+
+class TipoPlanilla(models.Model):
+    nombre_tipo_planilla = models.CharField(
+        max_length=45, blank=True, verbose_name='Nombre de Tipo de Planilla')
+    codigo_tipo_planilla = models.CharField(max_length=2, blank=True, verbose_name='Código de Tipo de Planilla')
+
+    def __str__(self):
+        return self.nombre_tipo_planilla
+
+    class Meta:
+        db_table = 'tipo_planilla'
+        ordering = ['nombre_tipo_planilla']
+        verbose_name = 'Tipo de Planilla'
+        verbose_name_plural = 'Tipos de Planilla'
+
+
+
+class ClasePlanilla(models.Model):
+    nombre_clase_planilla = models.CharField(
+        max_length=45, blank=True, verbose_name='Nombre de Clase de Planilla')
+    codigo_clase_planilla = models.CharField(max_length=2, blank=True, verbose_name='Código de Clase de Planilla')
+    tipo_planilla = models.ForeignKey(
+        TipoPlanilla, on_delete=models.CASCADE, verbose_name='Tipo de Planilla', null=True, blank=True)
+
+    def __str__(self):
+        return self.nombre_clase_planilla
+
+    class Meta:
+        db_table = 'clase_planilla'
+        ordering = ['nombre_clase_planilla']
+        verbose_name = 'Clase de Planilla'
+        verbose_name_plural = 'Clases de Planilla'
+
+
+class FuenteFinanciamiento(models.Model):
+    nombre_fuente_financiamiento = models.CharField(
+        max_length=45, blank=True, verbose_name='Nombre de Fuente de Financiamiento')
+    codigo_fuente_financiamiento = models.CharField(max_length=2, blank=True, verbose_name='Código de Fuente de Financiamiento')
+
+    def __str__(self):
+        return self.nombre_fuente_financiamiento
+
+    class Meta:
+        db_table = 'fuente_financiamiento'
+        ordering = ['nombre_fuente_financiamiento']
+        verbose_name = 'Fuente de Financiamiento'
+        verbose_name_plural = 'Fuentes de Financiamiento'
+
+
+class Transaccion(models.Model):
+    TIPO_CHOICES = [
+        ('HABER', 'Haber'),
+        ('DESCUENTO', 'Descuento')
+    ]
+    CATEGORIA_CHOICES = [
+        ('SUELDO', 'Sueldo'),
+        ('BONIFICACION', 'Bonificación'),
+        ('DEDUCCION', 'Deducción'),
+        ('BENEFICIOS_SOCIALES', 'Beneficios Sociales'),
+        ('APORTE', 'Aporte'),
+        ('OTRO', 'Otro')
+    ]
+
+    tipo = models.CharField(
+        max_length=10, choices=TIPO_CHOICES, verbose_name='Tipo', default='HABER'
+    )
+    categoria = models.CharField(
+        max_length=20, choices=CATEGORIA_CHOICES, verbose_name='Categoría'
+    )
+    codigo = models.CharField(
+        max_length=4, unique=True, verbose_name='Código', help_text='Código de Transacción'
+    )
+    descripcion = models.CharField(
+        max_length=45, verbose_name='Descripción'
+    )
+
+    def clean(self):
+        if self.tipo == 'HABER' and self.categoria not in ['SUELDO', 'BONIFICACION', 'BENEFICIOS_SOCIALES', 'OTRO']:
+            raise ValidationError(_('Categoría inválida para tipo Haber.'))
+        if self.tipo == 'DESCUENTO' and self.categoria not in ['DEDUCCION', 'APORTE', 'OTRO']:
+            raise ValidationError(_('Categoría inválida para tipo Descuento.'))
+
+    def save(self, *args, **kwargs):
+        self.clean()
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        return self.descripcion
+
+    class Meta:
+        db_table = 'transaccion'
+        ordering = ['descripcion']
+        verbose_name = 'Transacción'
+        verbose_name_plural = 'Transacciones'
+
 
 class Cargo(models.Model):
     nombre_cargo = models.CharField(
@@ -1055,16 +973,45 @@ class Situacion(models.Model):
         verbose_name = 'Situación'
         verbose_name_plural = 'Situaciones'```
 
-**Ruta: /Volumes/Datos/Trabajo/Sistemas/Planilla/backend/planillas/apps/trabajadores/serializers.py**
+**Ruta: /Volumes/Datos/Trabajo/Sistemas/Planilla/backend/planillas/apps/configuracion/serializers.py**
 ```Python
-# apps/trabajadores/serializers.py
+# apps/configuracion/serializers.py
 from rest_framework import serializers
-from .models import Trabajador, Cargo, RegimenLaboral, TipoServidor, RegimenPensionario, Afp, Banco, Situacion
+from .models import Ugel, TipoPlanilla, ClasePlanilla, FuenteFinanciamiento, Periodo, Transaccion, Cargo, RegimenLaboral, TipoServidor, RegimenPensionario, Afp, Banco, Situacion
 
-class TrabajadorSerializer(serializers.ModelSerializer):
+class UgelSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Trabajador
+        model = Ugel
+        fields = ['id', 'nombre_ugel', 'nombre_corto']
+        ref_name = 'UgelSerializerConfiguracion'
+
+class PeriodoSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Periodo
         fields = '__all__'
+
+class TipoPlanillaSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = TipoPlanilla
+        fields = '__all__'
+
+class ClasePlanillaSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ClasePlanilla
+        fields = '__all__'
+
+class FuenteFinanciamientoSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = FuenteFinanciamiento
+        fields = '__all__'
+
+
+class TransaccionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Transaccion
+        fields = '__all__'
+        ref_name = 'TransaccionSerializerTransacciones'
+
 
 class CargoSerializer(serializers.ModelSerializer):
     class Meta:
@@ -1101,32 +1048,74 @@ class SituacionSerializer(serializers.ModelSerializer):
         model = Situacion
         fields = '__all__'```
 
-**Ruta: /Volumes/Datos/Trabajo/Sistemas/Planilla/backend/planillas/apps/trabajadores/__init__.py**
+**Ruta: /Volumes/Datos/Trabajo/Sistemas/Planilla/backend/planillas/apps/configuracion/__init__.py**
 ```Python
 ```
 
-**Ruta: /Volumes/Datos/Trabajo/Sistemas/Planilla/backend/planillas/apps/trabajadores/apps.py**
+**Ruta: /Volumes/Datos/Trabajo/Sistemas/Planilla/backend/planillas/apps/configuracion/apps.py**
 ```Python
 from django.apps import AppConfig
 
 
-class TrabajadoresConfig(AppConfig):
+class ConfiguracionConfig(AppConfig):
     default_auto_field = 'django.db.models.BigAutoField'
-    name = 'apps.trabajadores'
+    name = 'apps.configuracion'
 ```
 
-**Ruta: /Volumes/Datos/Trabajo/Sistemas/Planilla/backend/planillas/apps/trabajadores/admin.py**
+**Ruta: /Volumes/Datos/Trabajo/Sistemas/Planilla/backend/planillas/apps/configuracion/admin.py**
 ```Python
-# apps/trabajadores/admin.py
 from django.contrib import admin
-from .models import Trabajador, Cargo, RegimenLaboral, TipoServidor, RegimenPensionario, Afp, Banco, Situacion
+from .models import Ugel, TipoPlanilla, ClasePlanilla, FuenteFinanciamiento, Periodo, Transaccion, Cargo, RegimenLaboral, TipoServidor, RegimenPensionario, Afp, Banco, Situacion
+from apps.transacciones.models import TransaccionTrabajador
 
-@admin.register(Trabajador)
-class TrabajadorAdmin(admin.ModelAdmin):
-    list_display = ('persona', 'estado')
-    search_fields = ('persona__nombres', 'persona__paterno', 'persona__materno', 'cargo__nombre_cargo')
-    list_filter = ('estado',)
-    ordering = ('persona__paterno', 'persona__materno', 'persona__nombres')
+# Register your models here.
+@admin.register(Ugel)
+class UgelAdmin(admin.ModelAdmin):
+    list_display = ['nombre_ugel', 'nombre_corto']
+    search_fields = ['nombre_ugel', 'nombre_corto']
+    ordering = ['nombre_ugel']
+
+@admin.register(Periodo)
+class PeriodoAdmin(admin.ModelAdmin):
+    list_display = ('periodo', 'mes', 'anio', 'es_adicional', 'periodo_actual')
+    search_fields = ('mes', 'anio', 'periodo')
+    list_filter = ('es_adicional',)
+    ordering = ('anio', 'mes')
+
+
+@admin.register(TipoPlanilla)
+class TipoPlanillaAdmin(admin.ModelAdmin):
+    list_display = ('nombre_tipo_planilla', 'codigo_tipo_planilla')
+    search_fields = ('nombre_tipo_planilla', 'codigo_tipo_planilla')
+    ordering = ('nombre_tipo_planilla',)
+
+@admin.register(ClasePlanilla)
+class ClasePlanillaAdmin(admin.ModelAdmin):
+    list_display = ('nombre_clase_planilla', 'codigo_clase_planilla', 'tipo_planilla')
+    search_fields = ('nombre_clase_planilla', 'codigo_clase_planilla')
+    list_filter = ('tipo_planilla',)
+    ordering = ('nombre_clase_planilla',)
+
+@admin.register(FuenteFinanciamiento)
+class FuenteFinanciamientoAdmin(admin.ModelAdmin):
+    list_display = ('nombre_fuente_financiamiento',)
+    search_fields = ('nombre_fuente_financiamiento',)
+    list_filter = ('nombre_fuente_financiamiento',)
+    ordering = ('nombre_fuente_financiamiento',)
+
+
+
+class TransaccionTrabajadorInline(admin.TabularInline):
+    model = TransaccionTrabajador
+    extra = 1  # Número de formularios adicionales vacíos que se mostrarán
+
+@admin.register(Transaccion)
+class TransaccionAdmin(admin.ModelAdmin):
+    list_display = ('codigo', 'descripcion', 'tipo', 'categoria')
+    search_fields = ('codigo', 'descripcion', 'tipo', 'categoria')
+    list_filter = ('tipo', 'categoria')
+    ordering = ('codigo',)
+
 
 @admin.register(Cargo)
 class CargoAdmin(admin.ModelAdmin):
@@ -1170,23 +1159,26 @@ class SituacionAdmin(admin.ModelAdmin):
     search_fields = ('nombre', 'abreviatura', 'codigo')
     ordering = ('nombre',)```
 
-**Ruta: /Volumes/Datos/Trabajo/Sistemas/Planilla/backend/planillas/apps/trabajadores/tests.py**
+**Ruta: /Volumes/Datos/Trabajo/Sistemas/Planilla/backend/planillas/apps/configuracion/tests.py**
 ```Python
 from django.test import TestCase
 
 # Create your tests here.
 ```
 
-**Ruta: /Volumes/Datos/Trabajo/Sistemas/Planilla/backend/planillas/apps/trabajadores/urls.py**
+**Ruta: /Volumes/Datos/Trabajo/Sistemas/Planilla/backend/planillas/apps/configuracion/urls.py**
 ```Python
+# apps/configuracion/urls.py
 from rest_framework.routers import DefaultRouter
-from .views import (
-    TrabajadorViewSet, CargoViewSet, RegimenLaboralViewSet, 
-    TipoServidorViewSet, RegimenPensionarioViewSet, AFPViewSet, BancoViewSet, SituacionViewSet
-)
+from .views import UgelViewSet, TipoPlanillaViewSet, ClasePlanillaViewSet, FuenteFinanciamientoViewSet, PeriodoViewSet, TransaccionViewSet, CargoViewSet, RegimenLaboralViewSet, TipoServidorViewSet, RegimenPensionarioViewSet, AFPViewSet, BancoViewSet, SituacionViewSet
 
 router = DefaultRouter()
-router.register(r'trabajadores', TrabajadorViewSet)
+router.register(r'ugels', UgelViewSet)
+router.register(r'periodos', PeriodoViewSet)
+router.register(r'transacciones', TransaccionViewSet)
+router.register(r'tipos-planilla', TipoPlanillaViewSet)
+router.register(r'clases-planilla', ClasePlanillaViewSet)
+router.register(r'fuentes-financiamiento', FuenteFinanciamientoViewSet)
 router.register(r'cargos', CargoViewSet)
 router.register(r'regimenes-laborales', RegimenLaboralViewSet)
 router.register(r'tipos-servidores', TipoServidorViewSet)
@@ -1195,29 +1187,48 @@ router.register(r'afps', AFPViewSet)
 router.register(r'bancos', BancoViewSet)
 router.register(r'situaciones', SituacionViewSet)
 
+
 urlpatterns = router.urls
 ```
 
-**Ruta: /Volumes/Datos/Trabajo/Sistemas/Planilla/backend/planillas/apps/trabajadores/views.py**
+**Ruta: /Volumes/Datos/Trabajo/Sistemas/Planilla/backend/planillas/apps/configuracion/views.py**
 ```Python
+from django.shortcuts import render
 from rest_framework import viewsets
+from .models import Ugel, TipoPlanilla, ClasePlanilla, FuenteFinanciamiento, Periodo, Transaccion, Cargo, RegimenLaboral, TipoServidor, RegimenPensionario, Afp, Banco, Situacion
+from .serializers import UgelSerializer, TipoPlanillaSerializer, ClasePlanillaSerializer, FuenteFinanciamientoSerializer, PeriodoSerializer, TransaccionSerializer, CargoSerializer, RegimenLaboralSerializer, TipoServidorSerializer, RegimenPensionarioSerializer, AFPSerializer, BancoSerializer, SituacionSerializer
 from rest_framework.permissions import IsAuthenticated
-from .models import Trabajador, Cargo, RegimenLaboral, TipoServidor, RegimenPensionario, Afp, Banco, Situacion
-from .serializers import (
-    TrabajadorSerializer, CargoSerializer, RegimenLaboralSerializer,
-    TipoServidorSerializer, RegimenPensionarioSerializer, AFPSerializer, BancoSerializer, SituacionSerializer
-)
 
-class TrabajadorViewSet(viewsets.ModelViewSet):
-    queryset = Trabajador.objects.all()
-    serializer_class = TrabajadorSerializer
+# Create your views here.
+class UgelViewSet(viewsets.ModelViewSet):
+    queryset = Ugel.objects.all()
+    serializer_class = UgelSerializer
     permission_classes = [IsAuthenticated]
 
-    def get_queryset(self):
-        user = self.request.user
-        if user.role == 'admin_sistema':
-            return Trabajador.objects.all()
-        return Trabajador.objects.filter(ugel=user.ugel)
+class PeriodoViewSet(viewsets.ModelViewSet):
+    queryset = Periodo.objects.all()
+    serializer_class = PeriodoSerializer
+    permission_classes = [IsAuthenticated]
+
+class TipoPlanillaViewSet(viewsets.ModelViewSet):
+    queryset = TipoPlanilla.objects.all()
+    serializer_class = TipoPlanillaSerializer
+    permission_classes = [IsAuthenticated]
+
+class ClasePlanillaViewSet(viewsets.ModelViewSet):
+    queryset = ClasePlanilla.objects.all()
+    serializer_class = ClasePlanillaSerializer
+    permission_classes = [IsAuthenticated]
+
+class FuenteFinanciamientoViewSet(viewsets.ModelViewSet):
+    queryset = FuenteFinanciamiento.objects.all()
+    serializer_class = FuenteFinanciamientoSerializer
+    permission_classes = [IsAuthenticated]
+
+class TransaccionViewSet(viewsets.ModelViewSet):
+    queryset = Transaccion.objects.all()
+    serializer_class = TransaccionSerializer
+    permission_classes = [IsAuthenticated]
 
 class CargoViewSet(viewsets.ModelViewSet):
     queryset = Cargo.objects.all()
@@ -1254,11 +1265,14 @@ class SituacionViewSet(viewsets.ModelViewSet):
     serializer_class = SituacionSerializer
     permission_classes = [IsAuthenticated]```
 
-**Ruta: /Volumes/Datos/Trabajo/Sistemas/Planilla/backend/planillas/apps/autenticacion/models.py**
+**Ruta: /Volumes/Datos/Trabajo/Sistemas/Planilla/backend/planillas/apps/usuarios/models.py**
 ```Python
-# apps/autenticacion/models.py
-from django.contrib.auth.models import AbstractUser
+# apps/usuarios/models.py
 from django.db import models
+from django.core.exceptions import ValidationError
+from django.utils.translation import gettext_lazy as _
+from apps.configuracion.models import TipoDocumento, Sexo, TipoDescuento, TipoBeneficiario, Ugel
+from django.contrib.auth.models import AbstractUser
 
 class User(AbstractUser):
     ADMINISTRADOR_DEL_SISTEMA = 'admin_sistema'
@@ -1281,7 +1295,8 @@ class User(AbstractUser):
         default=TRABAJADOR,
         verbose_name='Rol'
     )
-    ugel = models.ForeignKey('usuarios.Ugel', on_delete=models.CASCADE, null=True, blank=True, verbose_name='UGEL')
+    ugel = models.ForeignKey(Ugel, on_delete=models.CASCADE, null=True, blank=True, verbose_name='UGEL')
+    is_active = models.BooleanField(default=True, verbose_name='Activo')
 
     groups = models.ManyToManyField(
         'auth.Group',
@@ -1297,14 +1312,120 @@ class User(AbstractUser):
         help_text='Permisos específicos para este usuario.',
         verbose_name='permisos de usuario',
     )
-```
 
-**Ruta: /Volumes/Datos/Trabajo/Sistemas/Planilla/backend/planillas/apps/autenticacion/serializers.py**
+
+class Persona(models.Model):
+    user = models.OneToOneField(
+        User, on_delete=models.CASCADE, null=True, blank=True,
+        related_name='persona'
+    )
+    tipo_documento = models.ForeignKey(TipoDocumento, on_delete=models.CASCADE, verbose_name='Tipo de Documento')
+    numero_documento = models.CharField(
+        max_length=12, unique=True, db_index=True,
+        verbose_name='Número de Documento'
+    )
+    paterno = models.CharField(
+        max_length=45, blank=True, verbose_name='Apellido Paterno')
+    materno = models.CharField(
+        max_length=45, blank=True, verbose_name='Apellido Materno')
+    nombres = models.CharField(
+        max_length=45, blank=True, verbose_name='Nombres')
+    fecha_nacimiento = models.DateField(
+        null=True, blank=True, verbose_name='Fecha de Nacimiento')
+    sexo = models.ForeignKey(Sexo, on_delete=models.CASCADE, verbose_name='Sexo')
+    direccion = models.CharField(
+        max_length=100, blank=True, verbose_name='Dirección')
+    email = models.EmailField(max_length=45, blank=True, verbose_name='Email')
+
+    def __str__(self):
+        return f'{self.nombres} {self.paterno} {self.materno}'
+
+    def get_full_name(self):
+        return f'{self.nombres} {self.paterno} {self.materno}'.strip()
+
+    def clean(self):
+        if self.tipo_documento.codigo == 'DNI' and len(self.numero_documento) != 8:
+            raise ValidationError(_('El DNI debe tener 8 caracteres.'))
+        elif self.tipo_documento.codigo == 'CET' and len(self.numero_documento) != 9:
+            raise ValidationError(_('El Carnet de extranjería debe tener 9 caracteres.'))
+        elif self.tipo_documento.codigo == 'PAS' and len(self.numero_documento) != 12:
+            raise ValidationError(_('El pasaporte debe tener 12 caracteres.'))
+
+    def save(self, *args, **kwargs):
+        self.clean()
+        super().save(*args, **kwargs)
+
+    class Meta:
+        db_table = 'persona'
+        ordering = ['paterno', 'materno', 'nombres']
+        verbose_name = 'Persona'
+        verbose_name_plural = 'Personas'
+
+
+class Beneficiario(models.Model):
+    empleado = models.ForeignKey(
+        'trabajadores.Trabajador', on_delete=models.CASCADE, verbose_name='Empleado', related_name='beneficiarios'
+    )
+    persona = models.ForeignKey(
+        Persona, on_delete=models.CASCADE, verbose_name='Persona'
+    )
+    relacion_trabajador = models.CharField(
+        max_length=45, blank=True, verbose_name='Relación del Trabajador'
+    )
+    documento_descuento = models.CharField(
+        max_length=45, blank=True, verbose_name='Documento de Descuento'
+    )
+    numero_cuenta = models.CharField(
+        max_length=20, blank=True, verbose_name='Número de Cuenta'
+    )
+    tipo_beneficiario = models.ForeignKey(TipoBeneficiario, on_delete=models.CASCADE, default=1, verbose_name='Tipo de Beneficiario')
+    tipo_descuento = models.ForeignKey(TipoDescuento, on_delete=models.CASCADE, default=1, verbose_name='Tipo de Descuento')
+    descuento_fijo = models.DecimalField(
+        max_digits=8, decimal_places=2, null=True, blank=True, verbose_name='Descuento Fijo'
+    )
+    porcentaje_descuento = models.IntegerField(
+        null=True, blank=True, verbose_name='Porcentaje de Descuento'
+    )
+    fecha_inicio = models.DateField(
+        null=True, blank=True, verbose_name='Fecha de Inicio'
+    )
+    fecha_fin = models.DateField(
+        null=True, blank=True, verbose_name='Fecha de Fin'
+    )
+    estado = models.BooleanField(
+        verbose_name='Estado', default=True, null=True, blank=True
+    )
+    created = models.DateTimeField(auto_now_add=True)
+    updated = models.DateTimeField(auto_now=True)
+    banco = models.ForeignKey(
+        'configuracion.Banco', on_delete=models.CASCADE, verbose_name='Banco'
+    )
+
+    def __str__(self):
+        return f'{self.persona.nombres} {self.persona.paterno} {self.persona.materno}'
+
+    class Meta:
+        db_table = 'beneficiario'
+        ordering = ['id']
+        verbose_name = 'Beneficiario'
+        verbose_name_plural = 'Beneficiarios'
+
+    def clean(self):
+        if self.tipo_descuento.codigo == 'MF' and not self.descuento_fijo:
+            raise ValidationError('Debe especificar un monto fijo para el descuento.')
+        if self.tipo_descuento.codigo == 'DP' and not self.porcentaje_descuento:
+            raise ValidationError('Debe especificar un porcentaje para el descuento.')
+
+    def save(self, *args, **kwargs):
+        self.clean()
+        super().save(*args, **kwargs)```
+
+**Ruta: /Volumes/Datos/Trabajo/Sistemas/Planilla/backend/planillas/apps/usuarios/serializers.py**
 ```Python
-# apps/autenticacion/serializers.py
+# apps/usuarios/serializers.py
 from rest_framework import serializers
-from .models import User
-from apps.usuarios.models import Ugel
+from .models import Persona, Beneficiario, User
+from apps.configuracion.models import Ugel
 
 class UgelSerializer(serializers.ModelSerializer):
     class Meta:
@@ -1317,31 +1438,39 @@ class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ['id', 'username', 'email', 'role', 'is_active', 'date_joined', 'ugel']
-```
 
-**Ruta: /Volumes/Datos/Trabajo/Sistemas/Planilla/backend/planillas/apps/autenticacion/__init__.py**
+class PersonaSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Persona
+        fields = ['id', 'user', 'tipo_documento', 'numero_documento', 'paterno', 'materno', 'nombres', 'fecha_nacimiento', 'sexo', 'direccion', 'email']
+
+class BeneficiarioSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Beneficiario
+        fields = ['id', 'empleado', 'persona', 'relacion_trabajador', 'documento_descuento', 'numero_cuenta', 'tipo_beneficiario', 'tipo_descuento', 'descuento_fijo', 'porcentaje_descuento', 'fecha_inicio', 'fecha_fin', 'estado', 'banco', 'created', 'updated']```
+
+**Ruta: /Volumes/Datos/Trabajo/Sistemas/Planilla/backend/planillas/apps/usuarios/__init__.py**
 ```Python
 ```
 
-**Ruta: /Volumes/Datos/Trabajo/Sistemas/Planilla/backend/planillas/apps/autenticacion/apps.py**
+**Ruta: /Volumes/Datos/Trabajo/Sistemas/Planilla/backend/planillas/apps/usuarios/apps.py**
 ```Python
 from django.apps import AppConfig
 
 
-class AutenticacionConfig(AppConfig):
+class UsuariosConfig(AppConfig):
     default_auto_field = 'django.db.models.BigAutoField'
-    name = 'apps.autenticacion'
-```
+    name = 'apps.usuarios'```
 
-**Ruta: /Volumes/Datos/Trabajo/Sistemas/Planilla/backend/planillas/apps/autenticacion/admin.py**
+**Ruta: /Volumes/Datos/Trabajo/Sistemas/Planilla/backend/planillas/apps/usuarios/admin.py**
 ```Python
-# apps/autenticacion/admin.py
+# apps/usuarios/admin.py
 from django.contrib import admin
-from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
-from .models import User
+from .models import Persona, Beneficiario, User, Ugel
+from django.contrib.auth.admin import UserAdmin
 
 @admin.register(User)
-class UserAdmin(BaseUserAdmin):
+class UserAdmin(UserAdmin):
     fieldsets = (
         (None, {'fields': ('username', 'password')}),
         ('Personal info', {'fields': ('first_name', 'last_name', 'email')}),
@@ -1369,39 +1498,180 @@ class UserAdmin(BaseUserAdmin):
     list_display = ('username', 'email', 'first_name', 'last_name', 'is_staff', 'role', 'ugel')
     search_fields = ('username', 'first_name', 'last_name', 'email')
     ordering = ('username',)
-```
 
-**Ruta: /Volumes/Datos/Trabajo/Sistemas/Planilla/backend/planillas/apps/autenticacion/tests.py**
+@admin.register(Persona)
+class PersonaAdmin(admin.ModelAdmin):
+    list_display = ['nombres', 'paterno', 'materno', 'tipo_documento', 'numero_documento', 'email']
+    search_fields = ['nombres', 'paterno', 'materno', 'numero_documento']
+    list_filter = ['tipo_documento', 'sexo']
+    ordering = ['paterno', 'materno', 'nombres']
+
+@admin.register(Beneficiario)
+class BeneficiarioAdmin(admin.ModelAdmin):
+    list_display = ['persona', 'empleado', 'tipo_beneficiario', 'tipo_descuento', 'descuento_fijo', 'porcentaje_descuento', 'estado']
+    search_fields = ['persona__nombres', 'persona__paterno', 'persona__materno', 'empleado__persona__nombres', 'empleado__persona__paterno', 'empleado__persona__materno']
+    list_filter = ['tipo_beneficiario', 'tipo_descuento', 'estado']
+    ordering = ['persona', 'empleado']```
+
+**Ruta: /Volumes/Datos/Trabajo/Sistemas/Planilla/backend/planillas/apps/usuarios/tests.py**
 ```Python
 from django.test import TestCase
 
 # Create your tests here.
 ```
 
-**Ruta: /Volumes/Datos/Trabajo/Sistemas/Planilla/backend/planillas/apps/autenticacion/urls.py**
+**Ruta: /Volumes/Datos/Trabajo/Sistemas/Planilla/backend/planillas/apps/usuarios/urls.py**
 ```Python
-# apps/autenticacion/urls.py
+# apps/usuarios/urls.py
 from rest_framework.routers import DefaultRouter
-from .views import UserViewSet
+from .views import PersonaViewSet, BeneficiarioViewSet, UserViewSet
 
 router = DefaultRouter()
 router.register(r'users', UserViewSet)
+router.register(r'personas', PersonaViewSet)
+router.register(r'beneficiarios', BeneficiarioViewSet)
+
 
 urlpatterns = router.urls
 ```
 
-**Ruta: /Volumes/Datos/Trabajo/Sistemas/Planilla/backend/planillas/apps/autenticacion/views.py**
+**Ruta: /Volumes/Datos/Trabajo/Sistemas/Planilla/backend/planillas/apps/usuarios/views.py**
 ```Python
-# apps/autenticacion/views.py
+# apps/usuarios/views.py
 from rest_framework import viewsets
 from rest_framework.permissions import IsAuthenticated
-from .models import User
-from .serializers import UserSerializer
+from .models import Persona, Beneficiario, User
+from .serializers import PersonaSerializer, BeneficiarioSerializer, UserSerializer
+
 
 class UserViewSet(viewsets.ModelViewSet):
     queryset = User.objects.all()
     serializer_class = UserSerializer
     permission_classes = [IsAuthenticated]
+
+class PersonaViewSet(viewsets.ModelViewSet):
+    queryset = Persona.objects.all()
+    serializer_class = PersonaSerializer
+    permission_classes = [IsAuthenticated]
+
+class BeneficiarioViewSet(viewsets.ModelViewSet):
+    queryset = Beneficiario.objects.all()
+    serializer_class = BeneficiarioSerializer
+    permission_classes = [IsAuthenticated]
+```
+
+**Ruta: /Volumes/Datos/Trabajo/Sistemas/Planilla/backend/planillas/apps/trabajadores/models.py**
+```Python
+# apps/trabajadores/models.py
+from django.db import models
+from apps.usuarios.models import Persona
+
+class Trabajador(models.Model):
+    persona = models.ForeignKey(Persona, on_delete=models.CASCADE, verbose_name='Persona', related_name='empleados')
+    tiempo_servicios = models.CharField(max_length=6, blank=True, verbose_name='Tiempo de Servicios')
+    regimen_pensionario = models.ForeignKey('configuracion.RegimenPensionario', on_delete=models.CASCADE, verbose_name='Régimen Pensionario')
+    afp = models.ForeignKey('configuracion.Afp', on_delete=models.CASCADE, verbose_name='AFP')
+    cuspp = models.CharField(max_length=12, blank=True, verbose_name='CUSPP')
+    fecha_afiliacion = models.DateField(null=True, blank=True, verbose_name='Fecha de Afiliación')
+    fecha_devengue = models.DateField(null=True, blank=True, verbose_name='Fecha de Devengue')
+    banco = models.ForeignKey('configuracion.Banco', on_delete=models.CASCADE, verbose_name='Banco')
+    numero_cuenta = models.CharField(max_length=45, blank=True, verbose_name='Número de Cuenta')
+    ruc = models.CharField(max_length=11, blank=True, verbose_name='RUC')
+    estado = models.BooleanField(verbose_name='Estado', default=True, null=True, blank=True)
+    created = models.DateTimeField(auto_now_add=True)
+    updated = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f'{self.persona.nombres} {self.persona.paterno} {self.persona.materno}'
+
+    class Meta:
+        db_table = 'trabajador'
+        ordering = ['id']
+        verbose_name = 'Trabajador'
+        verbose_name_plural = 'Trabajadores'
+        indexes = [
+            models.Index(fields=['persona'], name='persona_idx'),
+        ]
+```
+
+**Ruta: /Volumes/Datos/Trabajo/Sistemas/Planilla/backend/planillas/apps/trabajadores/serializers.py**
+```Python
+# apps/trabajadores/serializers.py
+from rest_framework import serializers
+from .models import Trabajador
+
+class TrabajadorSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Trabajador
+        fields = '__all__'
+```
+
+**Ruta: /Volumes/Datos/Trabajo/Sistemas/Planilla/backend/planillas/apps/trabajadores/__init__.py**
+```Python
+```
+
+**Ruta: /Volumes/Datos/Trabajo/Sistemas/Planilla/backend/planillas/apps/trabajadores/apps.py**
+```Python
+from django.apps import AppConfig
+
+
+class TrabajadoresConfig(AppConfig):
+    default_auto_field = 'django.db.models.BigAutoField'
+    name = 'apps.trabajadores'
+```
+
+**Ruta: /Volumes/Datos/Trabajo/Sistemas/Planilla/backend/planillas/apps/trabajadores/admin.py**
+```Python
+# apps/trabajadores/admin.py
+from django.contrib import admin
+from .models import Trabajador
+
+@admin.register(Trabajador)
+class TrabajadorAdmin(admin.ModelAdmin):
+    list_display = ('persona', 'estado')
+    search_fields = ('persona__nombres', 'persona__paterno', 'persona__materno', 'cargo__nombre_cargo')
+    list_filter = ('estado',)
+    ordering = ('persona__paterno', 'persona__materno', 'persona__nombres')
+```
+
+**Ruta: /Volumes/Datos/Trabajo/Sistemas/Planilla/backend/planillas/apps/trabajadores/tests.py**
+```Python
+from django.test import TestCase
+
+# Create your tests here.
+```
+
+**Ruta: /Volumes/Datos/Trabajo/Sistemas/Planilla/backend/planillas/apps/trabajadores/urls.py**
+```Python
+from rest_framework.routers import DefaultRouter
+from .views import (
+    TrabajadorViewSet
+)
+
+router = DefaultRouter()
+router.register(r'trabajadores', TrabajadorViewSet)
+
+urlpatterns = router.urls
+```
+
+**Ruta: /Volumes/Datos/Trabajo/Sistemas/Planilla/backend/planillas/apps/trabajadores/views.py**
+```Python
+from rest_framework import viewsets
+from rest_framework.permissions import IsAuthenticated
+from .models import Trabajador
+from .serializers import TrabajadorSerializer
+
+class TrabajadorViewSet(viewsets.ModelViewSet):
+    queryset = Trabajador.objects.all()
+    serializer_class = TrabajadorSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        user = self.request.user
+        if user.role == 'admin_sistema':
+            return Trabajador.objects.all()
+        return Trabajador.objects.filter(ugel=user.ugel)
+
 ```
 
 **Ruta: /Volumes/Datos/Trabajo/Sistemas/Planilla/backend/planillas/apps/transacciones/models.py**
@@ -1410,55 +1680,8 @@ class UserViewSet(viewsets.ModelViewSet):
 from django.core.exceptions import ValidationError
 from django.db import models
 from django.db.models import Max
-from django.utils.translation import gettext_lazy as _
 from apps.planillas.models import Contrato
-
-class Transaccion(models.Model):
-    TIPO_CHOICES = [
-        ('HABER', 'Haber'),
-        ('DESCUENTO', 'Descuento')
-    ]
-    CATEGORIA_CHOICES = [
-        ('SUELDO', 'Sueldo'),
-        ('BONIFICACION', 'Bonificación'),
-        ('DEDUCCION', 'Deducción'),
-        ('BENEFICIOS_SOCIALES', 'Beneficios Sociales'),
-        ('APORTE', 'Aporte'),
-        ('OTRO', 'Otro')
-    ]
-
-    tipo = models.CharField(
-        max_length=10, choices=TIPO_CHOICES, verbose_name='Tipo', default='HABER'
-    )
-    categoria = models.CharField(
-        max_length=20, choices=CATEGORIA_CHOICES, verbose_name='Categoría'
-    )
-    codigo = models.CharField(
-        max_length=4, unique=True, verbose_name='Código', help_text='Código de Transacción'
-    )
-    descripcion = models.CharField(
-        max_length=45, verbose_name='Descripción'
-    )
-
-    def clean(self):
-        if self.tipo == 'HABER' and self.categoria not in ['SUELDO', 'BONIFICACION', 'BENEFICIOS_SOCIALES', 'OTRO']:
-            raise ValidationError(_('Categoría inválida para tipo Haber.'))
-        if self.tipo == 'DESCUENTO' and self.categoria not in ['DEDUCCION', 'APORTE', 'OTRO']:
-            raise ValidationError(_('Categoría inválida para tipo Descuento.'))
-
-    def save(self, *args, **kwargs):
-        self.clean()
-        super().save(*args, **kwargs)
-
-    def __str__(self):
-        return self.descripcion
-
-    class Meta:
-        db_table = 'transaccion'
-        ordering = ['descripcion']
-        verbose_name = 'Transacción'
-        verbose_name_plural = 'Transacciones'
-
+from apps.configuracion.models import Transaccion
 class TransaccionTrabajador(models.Model):
     contrato = models.ForeignKey(Contrato, on_delete=models.CASCADE, verbose_name='Contrato', related_name='transacciones')
     transaccion = models.ForeignKey(Transaccion, on_delete=models.CASCADE, verbose_name='Transacción')
@@ -1488,13 +1711,7 @@ class TransaccionTrabajador(models.Model):
 ```Python
 # apps/transacciones/serializers.py
 from rest_framework import serializers
-from .models import Transaccion, TransaccionTrabajador
-
-class TransaccionSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Transaccion
-        fields = '__all__'
-        ref_name = 'TransaccionSerializerTransacciones'
+from .models import TransaccionTrabajador
 
 class TransaccionTrabajadorSerializer(serializers.ModelSerializer):
     class Meta:
@@ -1521,18 +1738,7 @@ class TransaccionesConfig(AppConfig):
 ```Python
 # apps/transacciones/admin.py
 from django.contrib import admin
-from .models import Transaccion, TransaccionTrabajador
-
-class TransaccionTrabajadorInline(admin.TabularInline):
-    model = TransaccionTrabajador
-    extra = 1  # Número de formularios adicionales vacíos que se mostrarán
-
-@admin.register(Transaccion)
-class TransaccionAdmin(admin.ModelAdmin):
-    list_display = ('codigo', 'descripcion', 'tipo', 'categoria')
-    search_fields = ('codigo', 'descripcion', 'tipo', 'categoria')
-    list_filter = ('tipo', 'categoria')
-    ordering = ('codigo',)
+from .models import TransaccionTrabajador
 
 @admin.register(TransaccionTrabajador)
 class TransaccionTrabajadorAdmin(admin.ModelAdmin):
@@ -1554,10 +1760,9 @@ from django.test import TestCase
 ```Python
 # apps/transacciones/urls.py
 from rest_framework.routers import DefaultRouter
-from .views import TransaccionViewSet, TransaccionTrabajadorViewSet
+from .views import  TransaccionTrabajadorViewSet
 
 router = DefaultRouter()
-router.register(r'transacciones', TransaccionViewSet)
 router.register(r'transacciones-trabajadores', TransaccionTrabajadorViewSet)
 
 urlpatterns = router.urls
@@ -1568,13 +1773,8 @@ urlpatterns = router.urls
 # apps/transacciones/views.py
 from rest_framework import viewsets
 from rest_framework.permissions import IsAuthenticated
-from .models import Transaccion, TransaccionTrabajador
-from .serializers import TransaccionSerializer, TransaccionTrabajadorSerializer
-
-class TransaccionViewSet(viewsets.ModelViewSet):
-    queryset = Transaccion.objects.all()
-    serializer_class = TransaccionSerializer
-    permission_classes = [IsAuthenticated]
+from .models import TransaccionTrabajador
+from .serializers import TransaccionTrabajadorSerializer
 
 class TransaccionTrabajadorViewSet(viewsets.ModelViewSet):
     queryset = TransaccionTrabajador.objects.all()
@@ -1586,98 +1786,9 @@ class TransaccionTrabajadorViewSet(viewsets.ModelViewSet):
 ```Python
 # apps/planillas/models.py
 from django.db import models
-from django.core.exceptions import ValidationError
-from apps.trabajadores.models import Trabajador, RegimenLaboral, TipoServidor, Situacion, Cargo
+from apps.trabajadores.models import Trabajador
 from apps.usuarios.models import Beneficiario
-
-
-class Periodo(models.Model):
-    mes = models.CharField(max_length=2, blank=True, verbose_name='Mes')
-    anio = models.CharField(max_length=4, blank=True, verbose_name='Año')
-    periodo = models.CharField(
-        max_length=6, blank=True, verbose_name='Periodo', editable=False)
-    es_adicional = models.BooleanField(
-        default=False, verbose_name='¿Es adicional?')
-    periodo_actual = models.CharField(
-        max_length=6, blank=True, verbose_name='Periodo Actual', editable=False, null=True, default=None)
-
-    def __str__(self):
-        return f'{self.periodo} - {self.mes}/{self.anio}'
-
-    def clean(self):
-        if not self.periodo:
-            self.periodo = f'{self.anio}{self.mes}'
-        if not self.es_adicional and Periodo.objects.filter(mes=self.mes, anio=self.anio, es_adicional=False).exists():
-            raise ValidationError('Ya existe un período principal para este mes y año.')
-
-    def save(self, *args, **kwargs):
-        self.clean()
-        if not self.periodo:
-            self.periodo = f'{self.anio}{self.mes}'
-
-        if not self.es_adicional:
-            last_principal_periodo = Periodo.objects.filter(
-                es_adicional=False).order_by('-id').first()
-            self.periodo_actual = last_principal_periodo.periodo if last_principal_periodo else None
-
-        if not self.es_adicional and Periodo.objects.filter(mes=self.mes, anio=self.anio, es_adicional=False).exists():
-            raise ValidationError('Ya existe un período principal para este mes y año.')
-
-        super().save(*args, **kwargs)
-
-    class Meta:
-        db_table = 'periodo'
-        ordering = ['anio', 'mes']
-        verbose_name = 'Período'
-        verbose_name_plural = 'Períodos'
-
-
-class TipoPlanilla(models.Model):
-    nombre_tipo_planilla = models.CharField(
-        max_length=45, blank=True, verbose_name='Nombre de Tipo de Planilla')
-    codigo_tipo_planilla = models.CharField(max_length=2, blank=True, verbose_name='Código de Tipo de Planilla')
-
-    def __str__(self):
-        return self.nombre_tipo_planilla
-
-    class Meta:
-        db_table = 'tipo_planilla'
-        ordering = ['nombre_tipo_planilla']
-        verbose_name = 'Tipo de Planilla'
-        verbose_name_plural = 'Tipos de Planilla'
-
-
-
-class ClasePlanilla(models.Model):
-    nombre_clase_planilla = models.CharField(
-        max_length=45, blank=True, verbose_name='Nombre de Clase de Planilla')
-    codigo_clase_planilla = models.CharField(max_length=2, blank=True, verbose_name='Código de Clase de Planilla')
-    tipo_planilla = models.ForeignKey(
-        TipoPlanilla, on_delete=models.CASCADE, verbose_name='Tipo de Planilla', null=True, blank=True)
-
-    def __str__(self):
-        return self.nombre_clase_planilla
-
-    class Meta:
-        db_table = 'clase_planilla'
-        ordering = ['nombre_clase_planilla']
-        verbose_name = 'Clase de Planilla'
-        verbose_name_plural = 'Clases de Planilla'
-
-
-class FuenteFinanciamiento(models.Model):
-    nombre_fuente_financiamiento = models.CharField(
-        max_length=45, blank=True, verbose_name='Nombre de Fuente de Financiamiento')
-    codigo_fuente_financiamiento = models.CharField(max_length=2, blank=True, verbose_name='Código de Fuente de Financiamiento')
-
-    def __str__(self):
-        return self.nombre_fuente_financiamiento
-
-    class Meta:
-        db_table = 'fuente_financiamiento'
-        ordering = ['nombre_fuente_financiamiento']
-        verbose_name = 'Fuente de Financiamiento'
-        verbose_name_plural = 'Fuentes de Financiamiento'
+from apps.configuracion.models import Cargo, RegimenLaboral, TipoServidor, ClasePlanilla, FuenteFinanciamiento, Situacion, Periodo
 
 
 class Contrato(models.Model):
@@ -1724,7 +1835,7 @@ class PlanillaBeneficiario(models.Model):
 ```Python
 # apps/planillas/serializers.py
 from rest_framework import serializers
-from .models import Periodo, PlanillaBeneficiario, TipoPlanilla, ClasePlanilla, FuenteFinanciamiento, Contrato
+from .models import Periodo, PlanillaBeneficiario, Contrato
 from apps.transacciones.models import TransaccionTrabajador
 
 class TransaccionTrabajadorSerializer(serializers.ModelSerializer):
@@ -1737,31 +1848,12 @@ class TransaccionTrabajadorSerializer(serializers.ModelSerializer):
         }
         ref_name = 'TransaccionTrabajadorSerializerPlanillas'
 
-class PeriodoSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Periodo
-        fields = '__all__'
 
 class PlanillaBeneficiarioSerializer(serializers.ModelSerializer):
     class Meta:
         model = PlanillaBeneficiario
         fields = '__all__'
         ref_name = 'PlanillaBeneficiarioSerializerPlanillas'
-
-class TipoPlanillaSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = TipoPlanilla
-        fields = '__all__'
-
-class ClasePlanillaSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = ClasePlanilla
-        fields = '__all__'
-
-class FuenteFinanciamientoSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = FuenteFinanciamiento
-        fields = '__all__'
 
 class ContratoSerializer(serializers.ModelSerializer):
     transacciones = TransaccionTrabajadorSerializer(many=True, write_only=True, required=False)
@@ -1788,7 +1880,7 @@ class ContratoSerializer(serializers.ModelSerializer):
             for transaccion_data in transacciones_data:
                 if transaccion_data:  # Verificar que transaccion_data no esté vacío
                     TransaccionTrabajador.objects.create(contrato=instance, **transaccion_data)
-        
+
         return instance
 ```
 
@@ -1810,15 +1902,8 @@ class PlanillasConfig(AppConfig):
 ```Python
 # apps/planillas/admin.py
 from django.contrib import admin
-from .models import Periodo, PlanillaBeneficiario, TipoPlanilla, ClasePlanilla, FuenteFinanciamiento, Contrato
-from apps.transacciones.admin import TransaccionTrabajadorInline
-
-@admin.register(Periodo)
-class PeriodoAdmin(admin.ModelAdmin):
-    list_display = ('periodo', 'mes', 'anio', 'es_adicional', 'periodo_actual')
-    search_fields = ('mes', 'anio', 'periodo')
-    list_filter = ('es_adicional',)
-    ordering = ('anio', 'mes')
+from .models import  PlanillaBeneficiario, Contrato
+from apps.configuracion.admin import TransaccionTrabajadorInline
 
 @admin.register(PlanillaBeneficiario)
 class PlanillaBeneficiarioAdmin(admin.ModelAdmin):
@@ -1826,27 +1911,6 @@ class PlanillaBeneficiarioAdmin(admin.ModelAdmin):
     search_fields = ('beneficiario__persona__nombres', 'beneficiario__persona__paterno', 'beneficiario__persona__materno')
     list_filter = ('periodo',)
     ordering = ('beneficiario', 'periodo')
-
-@admin.register(TipoPlanilla)
-class TipoPlanillaAdmin(admin.ModelAdmin):
-    list_display = ('nombre_tipo_planilla', 'codigo_tipo_planilla')
-    search_fields = ('nombre_tipo_planilla', 'codigo_tipo_planilla')
-    ordering = ('nombre_tipo_planilla',)
-
-@admin.register(ClasePlanilla)
-class ClasePlanillaAdmin(admin.ModelAdmin):
-    list_display = ('nombre_clase_planilla', 'codigo_clase_planilla', 'tipo_planilla')
-    search_fields = ('nombre_clase_planilla', 'codigo_clase_planilla')
-    list_filter = ('tipo_planilla',)
-    ordering = ('nombre_clase_planilla',)
-
-@admin.register(FuenteFinanciamiento)
-class FuenteFinanciamientoAdmin(admin.ModelAdmin):
-    list_display = ('nombre_fuente_financiamiento',)
-    search_fields = ('nombre_fuente_financiamiento',)
-    list_filter = ('nombre_fuente_financiamiento',)
-    ordering = ('nombre_fuente_financiamiento',)
-
 # apps/trabajadores/admin.py
 
 @admin.register(Contrato)
@@ -1870,18 +1934,12 @@ from django.test import TestCase
 ```Python
 # apps/planillas/urls.py
 from rest_framework.routers import DefaultRouter
-from .views import (
-    PeriodoViewSet, PlanillaBeneficiarioViewSet,
-    TipoPlanillaViewSet, ClasePlanillaViewSet, FuenteFinanciamientoViewSet, ContratoViewSet
-)
+from .views import PlanillaBeneficiarioViewSet,ContratoViewSet
 
 router = DefaultRouter()
-router.register(r'periodos', PeriodoViewSet)
 router.register(r'contratos', ContratoViewSet)
 router.register(r'planillas-beneficiarios', PlanillaBeneficiarioViewSet)
-router.register(r'tipos-planilla', TipoPlanillaViewSet)
-router.register(r'clases-planilla', ClasePlanillaViewSet)
-router.register(r'fuentes-financiamiento', FuenteFinanciamientoViewSet)
+
 
 urlpatterns = router.urls
 ```
@@ -1891,32 +1949,11 @@ urlpatterns = router.urls
 # apps/planillas/views.py
 from rest_framework import viewsets
 from rest_framework.permissions import IsAuthenticated
-from .models import Periodo, PlanillaBeneficiario, TipoPlanilla, ClasePlanilla, FuenteFinanciamiento, Contrato
-from .serializers import PeriodoSerializer, PlanillaBeneficiarioSerializer, TipoPlanillaSerializer, ClasePlanillaSerializer, FuenteFinanciamientoSerializer, ContratoSerializer
-
-class PeriodoViewSet(viewsets.ModelViewSet):
-    queryset = Periodo.objects.all()
-    serializer_class = PeriodoSerializer
-    permission_classes = [IsAuthenticated]
-
+from .models import PlanillaBeneficiario, Contrato
+from .serializers import PlanillaBeneficiarioSerializer, ContratoSerializer
 class PlanillaBeneficiarioViewSet(viewsets.ModelViewSet):
     queryset = PlanillaBeneficiario.objects.all()
     serializer_class = PlanillaBeneficiarioSerializer
-    permission_classes = [IsAuthenticated]
-
-class TipoPlanillaViewSet(viewsets.ModelViewSet):
-    queryset = TipoPlanilla.objects.all()
-    serializer_class = TipoPlanillaSerializer
-    permission_classes = [IsAuthenticated]
-
-class ClasePlanillaViewSet(viewsets.ModelViewSet):
-    queryset = ClasePlanilla.objects.all()
-    serializer_class = ClasePlanillaSerializer
-    permission_classes = [IsAuthenticated]
-
-class FuenteFinanciamientoViewSet(viewsets.ModelViewSet):
-    queryset = FuenteFinanciamiento.objects.all()
-    serializer_class = FuenteFinanciamientoSerializer
     permission_classes = [IsAuthenticated]
 
 class ContratoViewSet(viewsets.ModelViewSet):

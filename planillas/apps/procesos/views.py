@@ -3,7 +3,7 @@ from django.db import models
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
-from apps.planillas.models import Periodo, TipoPlanilla
+from apps.configuracion.models import Periodo, TipoPlanilla
 from apps.trabajadores.models import Trabajador
 from apps.planillas.models import Contrato
 from apps.transacciones.models import TransaccionTrabajador

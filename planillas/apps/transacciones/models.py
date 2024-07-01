@@ -2,55 +2,8 @@
 from django.core.exceptions import ValidationError
 from django.db import models
 from django.db.models import Max
-from django.utils.translation import gettext_lazy as _
 from apps.planillas.models import Contrato
-
-class Transaccion(models.Model):
-    TIPO_CHOICES = [
-        ('HABER', 'Haber'),
-        ('DESCUENTO', 'Descuento')
-    ]
-    CATEGORIA_CHOICES = [
-        ('SUELDO', 'Sueldo'),
-        ('BONIFICACION', 'Bonificación'),
-        ('DEDUCCION', 'Deducción'),
-        ('BENEFICIOS_SOCIALES', 'Beneficios Sociales'),
-        ('APORTE', 'Aporte'),
-        ('OTRO', 'Otro')
-    ]
-
-    tipo = models.CharField(
-        max_length=10, choices=TIPO_CHOICES, verbose_name='Tipo', default='HABER'
-    )
-    categoria = models.CharField(
-        max_length=20, choices=CATEGORIA_CHOICES, verbose_name='Categoría'
-    )
-    codigo = models.CharField(
-        max_length=4, unique=True, verbose_name='Código', help_text='Código de Transacción'
-    )
-    descripcion = models.CharField(
-        max_length=45, verbose_name='Descripción'
-    )
-
-    def clean(self):
-        if self.tipo == 'HABER' and self.categoria not in ['SUELDO', 'BONIFICACION', 'BENEFICIOS_SOCIALES', 'OTRO']:
-            raise ValidationError(_('Categoría inválida para tipo Haber.'))
-        if self.tipo == 'DESCUENTO' and self.categoria not in ['DEDUCCION', 'APORTE', 'OTRO']:
-            raise ValidationError(_('Categoría inválida para tipo Descuento.'))
-
-    def save(self, *args, **kwargs):
-        self.clean()
-        super().save(*args, **kwargs)
-
-    def __str__(self):
-        return self.descripcion
-
-    class Meta:
-        db_table = 'transaccion'
-        ordering = ['descripcion']
-        verbose_name = 'Transacción'
-        verbose_name_plural = 'Transacciones'
-
+from apps.configuracion.models import Transaccion
 class TransaccionTrabajador(models.Model):
     contrato = models.ForeignKey(Contrato, on_delete=models.CASCADE, verbose_name='Contrato', related_name='transacciones')
     transaccion = models.ForeignKey(Transaccion, on_delete=models.CASCADE, verbose_name='Transacción')
@@ -61,7 +14,7 @@ class TransaccionTrabajador(models.Model):
     estado = models.BooleanField(verbose_name='Estado', default=True)
 
     def __str__(self):
-        return f'{self.correlativo} - {self.contrato} - {self.transaccion.descripcion} - {self.monto}'
+        return f'{self.correlativo} - {self.contrato} - {self.monto}'
 
     class Meta:
         db_table = 'transacciones_trabajadores'

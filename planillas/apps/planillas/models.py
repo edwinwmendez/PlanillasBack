@@ -1,101 +1,16 @@
 # apps/planillas/models.py
 from django.db import models
-from django.core.exceptions import ValidationError
-from apps.trabajadores.models import Trabajador, RegimenLaboral, TipoServidor, Situacion, Cargo
+from apps.trabajadores.models import Trabajador
 from apps.usuarios.models import Beneficiario
+from apps.configuracion.models import Cargo, RegimenLaboral, TipoServidor, ClasePlanilla, FuenteFinanciamiento, Situacion, Periodo
+from django.utils import timezone
+from django.db.models import Sum
 
-
-class Periodo(models.Model):
-    mes = models.CharField(max_length=2, blank=True, verbose_name='Mes')
-    anio = models.CharField(max_length=4, blank=True, verbose_name='Año')
-    periodo = models.CharField(
-        max_length=6, blank=True, verbose_name='Periodo', editable=False)
-    es_adicional = models.BooleanField(
-        default=False, verbose_name='¿Es adicional?')
-    periodo_actual = models.CharField(
-        max_length=6, blank=True, verbose_name='Periodo Actual', editable=False, null=True, default=None)
-
-    def __str__(self):
-        return f'{self.periodo} - {self.mes}/{self.anio}'
-
-    def clean(self):
-        if not self.periodo:
-            self.periodo = f'{self.anio}{self.mes}'
-        if not self.es_adicional and Periodo.objects.filter(mes=self.mes, anio=self.anio, es_adicional=False).exists():
-            raise ValidationError('Ya existe un período principal para este mes y año.')
-
-    def save(self, *args, **kwargs):
-        self.clean()
-        if not self.periodo:
-            self.periodo = f'{self.anio}{self.mes}'
-
-        if not self.es_adicional:
-            last_principal_periodo = Periodo.objects.filter(
-                es_adicional=False).order_by('-id').first()
-            self.periodo_actual = last_principal_periodo.periodo if last_principal_periodo else None
-
-        if not self.es_adicional and Periodo.objects.filter(mes=self.mes, anio=self.anio, es_adicional=False).exists():
-            raise ValidationError('Ya existe un período principal para este mes y año.')
-
-        super().save(*args, **kwargs)
-
-    class Meta:
-        db_table = 'periodo'
-        ordering = ['anio', 'mes']
-        verbose_name = 'Período'
-        verbose_name_plural = 'Períodos'
-
-
-class TipoPlanilla(models.Model):
-    nombre_tipo_planilla = models.CharField(
-        max_length=45, blank=True, verbose_name='Nombre de Tipo de Planilla')
-    codigo_tipo_planilla = models.CharField(max_length=2, blank=True, verbose_name='Código de Tipo de Planilla')
-
-    def __str__(self):
-        return self.nombre_tipo_planilla
-
-    class Meta:
-        db_table = 'tipo_planilla'
-        ordering = ['nombre_tipo_planilla']
-        verbose_name = 'Tipo de Planilla'
-        verbose_name_plural = 'Tipos de Planilla'
-
-
-
-class ClasePlanilla(models.Model):
-    nombre_clase_planilla = models.CharField(
-        max_length=45, blank=True, verbose_name='Nombre de Clase de Planilla')
-    codigo_clase_planilla = models.CharField(max_length=2, blank=True, verbose_name='Código de Clase de Planilla')
-    tipo_planilla = models.ForeignKey(
-        TipoPlanilla, on_delete=models.CASCADE, verbose_name='Tipo de Planilla', null=True, blank=True)
-
-    def __str__(self):
-        return self.nombre_clase_planilla
-
-    class Meta:
-        db_table = 'clase_planilla'
-        ordering = ['nombre_clase_planilla']
-        verbose_name = 'Clase de Planilla'
-        verbose_name_plural = 'Clases de Planilla'
-
-
-class FuenteFinanciamiento(models.Model):
-    nombre_fuente_financiamiento = models.CharField(
-        max_length=45, blank=True, verbose_name='Nombre de Fuente de Financiamiento')
-    codigo_fuente_financiamiento = models.CharField(max_length=2, blank=True, verbose_name='Código de Fuente de Financiamiento')
-
-    def __str__(self):
-        return self.nombre_fuente_financiamiento
-
-    class Meta:
-        db_table = 'fuente_financiamiento'
-        ordering = ['nombre_fuente_financiamiento']
-        verbose_name = 'Fuente de Financiamiento'
-        verbose_name_plural = 'Fuentes de Financiamiento'
 
 
 class Contrato(models.Model):
     trabajador = models.ForeignKey(Trabajador, on_delete=models.CASCADE, related_name='contratos')
+    centro_de_trabajo = models.CharField(max_length=255, blank=True, verbose_name='Centro de Trabajo')
     cargo = models.ForeignKey(Cargo, on_delete=models.CASCADE, verbose_name='Cargo')
     fecha_ingreso = models.DateField(null=True, blank=True, verbose_name='Fecha de Ingreso')
     fecha_cese = models.DateField(null=True, blank=True, verbose_name='Fecha de Cese')
@@ -106,6 +21,8 @@ class Contrato(models.Model):
     clase_planilla = models.ForeignKey(ClasePlanilla, on_delete=models.CASCADE, verbose_name='Clase de Planilla')
     fuente_financiamiento = models.ForeignKey(FuenteFinanciamiento, on_delete=models.CASCADE, verbose_name='Fuente de Financiamiento')
     dias_laborados = models.IntegerField(null=True, blank=True, verbose_name='Días Laborados', default=30)
+    leyenda_permanente = models.CharField(max_length=255, blank=True, verbose_name='Leyenda Permanente')
+    jornada_laboral = models.IntegerField(null=True, blank=True, verbose_name='Jornada Laboral', default=48)
     situacion = models.ForeignKey(Situacion, on_delete=models.CASCADE, verbose_name='Situación')
     created = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)
@@ -116,8 +33,85 @@ class Contrato(models.Model):
     class Meta:
         db_table = 'contrato'
         ordering = ['id']
-        verbose_name = 'Contrato del Trabajador'
-        verbose_name_plural = 'Contratos de los Trabajadores'
+        verbose_name = 'Contrato'
+        verbose_name_plural = 'Contratos'
+
+
+
+class Planilla(models.Model):
+    ESTADO_CHOICES = [
+        ('APERTURADO', 'Aperturado'),
+        ('CERRADO', 'Cerrado')
+    ]
+
+    correlativo = models.CharField(max_length=10, verbose_name='Correlativo')
+    clase_planilla = models.ForeignKey(ClasePlanilla, on_delete=models.CASCADE, verbose_name='Clase de Planilla')
+    fuente_financiamiento = models.ForeignKey(FuenteFinanciamiento, on_delete=models.CASCADE, verbose_name='Fuente de Financiamiento')
+    periodo = models.ForeignKey(Periodo, on_delete=models.CASCADE, verbose_name='Período')
+    total_haberes = models.DecimalField(max_digits=12, decimal_places=2, default=0, verbose_name='Total Haberes')
+    total_descuentos = models.DecimalField(max_digits=12, decimal_places=2, default=0, verbose_name='Total Descuentos')
+    total_aportes = models.DecimalField(max_digits=12, decimal_places=2, default=0, verbose_name='Total Aportes')
+    estado = models.CharField(max_length=10, choices=ESTADO_CHOICES, default='APERTURADO', verbose_name='Estado')
+    created = models.DateTimeField(auto_now_add=True)
+    updated = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        unique_together = ('correlativo', 'periodo')
+        db_table = 'planilla'
+
+    def __str__(self):
+        return f'{self.correlativo} - {self.clase_planilla} - {self.fuente_financiamiento} - {self.periodo} - {self.estado}'
+
+class Boleta(models.Model):
+    contrato = models.ForeignKey(Contrato, on_delete=models.CASCADE, related_name='boletas')
+    planilla = models.ForeignKey(Planilla, on_delete=models.CASCADE, related_name='boletas')
+    total_haberes = models.DecimalField(max_digits=12, decimal_places=2, default=0, verbose_name='Total Haberes')
+    total_descuentos = models.DecimalField(max_digits=12, decimal_places=2, default=0, verbose_name='Total Descuentos')
+    total_aportes = models.DecimalField(max_digits=12, decimal_places=2, default=0, verbose_name='Total Aportes')
+    neto_a_pagar = models.DecimalField(max_digits=12, decimal_places=2, default=0, verbose_name='Neto a Pagar')
+    numero_boleta = models.CharField(max_length=5, verbose_name='Número de Boleta')
+    visualizada = models.BooleanField(default=False, verbose_name='Visualizada')
+    fecha_visualizacion = models.DateTimeField(null=True, blank=True, verbose_name='Fecha de Visualización')
+    descargada = models.BooleanField(default=False, verbose_name='Descargada')
+    fecha_descarga = models.DateTimeField(null=True, blank=True, verbose_name='Fecha de Descarga')
+    created = models.DateTimeField(auto_now_add=True)
+    updated = models.DateTimeField(auto_now=True)
+
+    def calcular_totales(self):
+        transacciones = self.contrato.transacciones.filter(
+            periodo_inicial__lte=self.planilla.periodo,
+            periodo_final__gte=self.planilla.periodo,
+            estado=True
+        )
+        self.total_haberes = transacciones.filter(transaccion__tipo_transaccion='HABER').aggregate(Sum('monto'))['monto__sum'] or 0
+        self.total_descuentos = transacciones.filter(transaccion__tipo_transaccion='DESCUENTO').aggregate(Sum('monto'))['monto__sum'] or 0
+        self.total_aportes = transacciones.filter(transaccion__tipo_transaccion='APORTE').aggregate(Sum('monto'))['monto__sum'] or 0
+        self.neto_a_pagar = self.total_haberes - self.total_descuentos
+
+
+    def save(self, *args, **kwargs):
+        self.calcular_totales()
+        super().save(*args, **kwargs)
+
+    def marcar_como_visualizada(self):
+        self.visualizada = True
+        self.fecha_visualizacion = timezone.now()
+        self.save()
+
+    def marcar_como_descargada(self):
+        self.descargada = True
+        self.fecha_descarga = timezone.now()
+        self.save()
+
+    def __str__(self):
+        return f'{self.contrato} - {self.planilla} - {self.planilla.periodo}'
+
+    class Meta:
+        db_table = 'boleta'
+        ordering = ['planilla', 'contrato']
+        unique_together = ('contrato', 'planilla')
+        verbose_name = 'Boleta'
+        verbose_name_plural = 'Boletas'
 
 
 class PlanillaBeneficiario(models.Model):
@@ -133,3 +127,5 @@ class PlanillaBeneficiario(models.Model):
         ordering = ['id']
         verbose_name = 'Planilla del Beneficiario'
         verbose_name_plural = 'Planillas de los Beneficiarios'
+
+

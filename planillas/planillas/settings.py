@@ -38,7 +38,6 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'rest_framework',
     'drf_yasg',
-    'apps.autenticacion',
     'apps.usuarios',
     'apps.trabajadores',
     'apps.transacciones',
@@ -46,6 +45,7 @@ INSTALLED_APPS = [
     'apps.reportes',
     'apps.procesos',
     'apps.auditoria',
+    'apps.configuracion',
 ]
 
 MIDDLEWARE = [
@@ -85,7 +85,7 @@ WSGI_APPLICATION = 'planillas.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'NAME': BASE_DIR / 'db_planillas.sqlite3',
     }
 }
 
@@ -148,4 +148,4 @@ REST_FRAMEWORK = {
     ),
 }
 
-AUTH_USER_MODEL = 'autenticacion.User'
+AUTH_USER_MODEL = 'usuarios.User'

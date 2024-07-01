@@ -1,8 +1,14 @@
 # apps/usuarios/views.py
 from rest_framework import viewsets
 from rest_framework.permissions import IsAuthenticated
-from .models import Persona, Beneficiario, Ugel
-from .serializers import PersonaSerializer, BeneficiarioSerializer, UgelSerializer
+from .models import Persona, Beneficiario, User
+from .serializers import PersonaSerializer, BeneficiarioSerializer, UserSerializer
+
+
+class UserViewSet(viewsets.ModelViewSet):
+    queryset = User.objects.all()
+    serializer_class = UserSerializer
+    permission_classes = [IsAuthenticated]
 
 class PersonaViewSet(viewsets.ModelViewSet):
     queryset = Persona.objects.all()
@@ -12,9 +18,4 @@ class PersonaViewSet(viewsets.ModelViewSet):
 class BeneficiarioViewSet(viewsets.ModelViewSet):
     queryset = Beneficiario.objects.all()
     serializer_class = BeneficiarioSerializer
-    permission_classes = [IsAuthenticated]
-
-class UgelViewSet(viewsets.ModelViewSet):
-    queryset = Ugel.objects.all()
-    serializer_class = UgelSerializer
     permission_classes = [IsAuthenticated]

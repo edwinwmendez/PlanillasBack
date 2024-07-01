@@ -1,6 +1,6 @@
 # apps/planillas/serializers.py
 from rest_framework import serializers
-from .models import Periodo, PlanillaBeneficiario, TipoPlanilla, ClasePlanilla, FuenteFinanciamiento, Contrato
+from .models import Periodo, PlanillaBeneficiario, Contrato, Planilla, Boleta
 from apps.transacciones.models import TransaccionTrabajador
 
 class TransaccionTrabajadorSerializer(serializers.ModelSerializer):
@@ -13,31 +13,12 @@ class TransaccionTrabajadorSerializer(serializers.ModelSerializer):
         }
         ref_name = 'TransaccionTrabajadorSerializerPlanillas'
 
-class PeriodoSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Periodo
-        fields = '__all__'
 
 class PlanillaBeneficiarioSerializer(serializers.ModelSerializer):
     class Meta:
         model = PlanillaBeneficiario
         fields = '__all__'
         ref_name = 'PlanillaBeneficiarioSerializerPlanillas'
-
-class TipoPlanillaSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = TipoPlanilla
-        fields = '__all__'
-
-class ClasePlanillaSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = ClasePlanilla
-        fields = '__all__'
-
-class FuenteFinanciamientoSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = FuenteFinanciamiento
-        fields = '__all__'
 
 class ContratoSerializer(serializers.ModelSerializer):
     transacciones = TransaccionTrabajadorSerializer(many=True, write_only=True, required=False)
@@ -64,5 +45,42 @@ class ContratoSerializer(serializers.ModelSerializer):
             for transaccion_data in transacciones_data:
                 if transaccion_data:  # Verificar que transaccion_data no esté vacío
                     TransaccionTrabajador.objects.create(contrato=instance, **transaccion_data)
-        
+
         return instance
+
+class PlanillaSerializer(serializers.ModelSerializer):
+    contratos = ContratoSerializer(many=True, required=False)
+
+    class Meta:
+        model = Planilla
+        fields = '__all__'
+
+    def create(self, validated_data):
+        contratos_data = validated_data.pop('contratos', [])
+        planilla = Planilla.objects.create(**validated_data)
+        for contrato_data in contratos_data:
+            if contrato_data:  # Verificar que contrato_data no esté vacío
+                contrato = Contrato.objects.create(**contrato_data)
+                planilla.contratos.add(contrato)
+        return planilla
+
+    def update(self, instance, validated_data):
+        contratos_data = validated_data.pop('contratos', [])
+        instance = super().update(instance, validated_data)
+
+        if contratos_data:
+            instance.contratos.all().delete()  # Elimina los contratos existentes
+            for contrato_data in contratos_data:
+                if contrato_data:  # Verificar que contrato_data no esté vacío
+                    contrato = Contrato.objects.create(**contrato_data)
+                    instance.contratos.add(contrato)
+
+        return instance
+
+class BoletaSerializer(serializers.ModelSerializer):
+    planilla = PlanillaSerializer(read_only=True)
+    contrato = ContratoSerializer(read_only=True)
+
+    class Meta:
+        model = Boleta
+        fields = '__all__'
