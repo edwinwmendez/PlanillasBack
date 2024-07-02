@@ -1,7 +1,7 @@
 from django.shortcuts import render
 from rest_framework import viewsets
-from .models import Ugel, TipoPlanilla, ClasePlanilla, FuenteFinanciamiento, Periodo, Transaccion, Cargo, RegimenLaboral, TipoServidor, RegimenPensionario, Afp, Banco, Situacion, TipoDocumento, Sexo
-from .serializers import UgelSerializer, TipoPlanillaSerializer, ClasePlanillaSerializer, FuenteFinanciamientoSerializer, PeriodoSerializer, TransaccionSerializer, CargoSerializer, RegimenLaboralSerializer, TipoServidorSerializer, RegimenPensionarioSerializer, AFPSerializer, BancoSerializer, SituacionSerializer, TipoDocumentoSerializer, SexoSerializer
+from .models import Ugel, TipoPlanilla, ClasePlanilla, FuenteFinanciamiento, Periodo, Transaccion, Cargo, RegimenLaboral, TipoServidor, RegimenPensionario, Afp, Banco, Situacion, TipoDocumento, Sexo, TipoDescuento, TipoBeneficiario, EstadoCivil
+from .serializers import UgelSerializer, TipoPlanillaSerializer, ClasePlanillaSerializer, FuenteFinanciamientoSerializer, PeriodoSerializer, TransaccionSerializer, CargoSerializer, RegimenLaboralSerializer, TipoServidorSerializer, RegimenPensionarioSerializer, AFPSerializer, BancoSerializer, SituacionSerializer, TipoDocumentoSerializer, SexoSerializer, TipoDescuentoSerializer, TipoBeneficiarioSerializer, EstadoCivilSerializer
 from rest_framework.permissions import IsAuthenticated
 
 # Create your views here.
@@ -78,4 +78,19 @@ class SexoViewSet(viewsets.ModelViewSet):
 class TipoDocumentoViewSet(viewsets.ModelViewSet):
     queryset = TipoDocumento.objects.all()
     serializer_class = TipoDocumentoSerializer
+    permission_classes = [IsAuthenticated]
+
+class TipoDescuentoViewSet(viewsets.ModelViewSet):
+    queryset = TipoDescuento.objects.all()
+    serializer_class = TipoDescuentoSerializer
+    permission_classes = [IsAuthenticated]
+
+class TipoBeneficiarioViewSet(viewsets.ModelViewSet):
+    queryset = TipoBeneficiario.objects.all()
+    serializer_class = TipoBeneficiarioSerializer
+    permission_classes = [IsAuthenticated]
+
+class EstadoCivilViewSet(viewsets.ModelViewSet):
+    queryset = EstadoCivil.objects.all()
+    serializer_class = EstadoCivilSerializer
     permission_classes = [IsAuthenticated]

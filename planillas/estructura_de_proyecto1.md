@@ -1,100 +1,99 @@
 # Estructura del Directorio y Contenido de Archivos
 
 ## Estructura del Directorio:
-│├── planillas/
-│    ├── estructura_de_proyecto1.md
-│    ├── Tablas Parametricas.xlsx
-│    ├── estructura_de_proyecto.md
-│    └── manage.py
-│    ├── planillas/
-│        ├── asgi.py
-│        ├── __init__.py
-│        ├── settings.py
-│        ├── urls.py
-│        └── wsgi.py
-│    ├── apps/
-│        ├── __init__.py
-│        └── middleware.py
-│        ├── procesos/
-│            ├── models.py
-│            ├── serializers.py
-│            ├── __init__.py
-│            ├── apps.py
-│            ├── admin.py
-│            ├── utils.py
-│            ├── tests.py
-│            ├── urls.py
-│            └── views.py
-│            ├── management/
-│                ├── commands/
-│                    └── generar_boletas.py
-│        ├── reportes/
-│            ├── models.py
-│            ├── serializers.py
-│            ├── __init__.py
-│            ├── apps.py
-│            ├── admin.py
-│            ├── tests.py
-│            ├── urls.py
-│            └── views.py
-│        ├── configuracion/
-│            ├── models.py
-│            ├── serializers.py
-│            ├── __init__.py
-│            ├── apps.py
-│            ├── admin.py
-│            ├── tests.py
-│            ├── urls.py
-│            └── views.py
-│        ├── usuarios/
-│            ├── models.py
-│            ├── serializers.py
-│            ├── __init__.py
-│            ├── apps.py
-│            ├── admin.py
-│            ├── tests.py
-│            ├── urls.py
-│            └── views.py
-│        ├── trabajadores/
-│            ├── models.py
-│            ├── serializers.py
-│            ├── __init__.py
-│            ├── apps.py
-│            ├── admin.py
-│            ├── tests.py
-│            ├── urls.py
-│            └── views.py
-│        ├── transacciones/
-│            ├── models.py
-│            ├── serializers.py
-│            ├── __init__.py
-│            ├── apps.py
-│            ├── admin.py
-│            ├── tests.py
-│            ├── urls.py
-│            └── views.py
-│        ├── planillas/
-│            ├── models.py
-│            ├── serializers.py
-│            ├── __init__.py
-│            ├── apps.py
-│            ├── admin.py
-│            ├── tests.py
-│            ├── urls.py
-│            └── views.py
-│        ├── auditoria/
-│            ├── models.py
-│            ├── serializers.py
-│            ├── __init__.py
-│            ├── apps.py
-│            ├── admin.py
-│            ├── tests.py
-│            ├── urls.py
-│            └── views.py
 
+│├── planillas/
+│ ├── estructura_de_proyecto.md
+│ ├── planillas/
+│ ├── asgi.py
+│ ├── **init**.py
+│ ├── settings.py
+│ ├── urls.py
+│ └── wsgi.py
+│ ├── apps/
+│ ├── **init**.py
+│ └── middleware.py
+│ ├── procesos/
+│ ├── models.py
+│ ├── serializers.py
+│ ├── **init**.py
+│ ├── apps.py
+│ ├── admin.py
+│ ├── utils.py
+│ ├── tests.py
+│ ├── urls.py
+│ └── views.py
+│ ├── management/
+│ ├── commands/
+│ └── generar_boletas.py
+│ ├── reportes/
+│ ├── models.py
+│ ├── serializers.py
+│ ├── **init**.py
+│ ├── apps.py
+│ ├── admin.py
+│ ├── tests.py
+│ ├── urls.py
+│ └── views.py
+│ ├── configuracion/
+│ ├── models.py
+│ ├── serializers.py
+│ ├── **init**.py
+│ ├── apps.py
+│ ├── admin.py
+│ ├── tests.py
+│ ├── urls.py
+│ └── views.py
+│ ├── usuarios/
+│ ├── models.py
+│ ├── serializers.py
+│ ├── **init**.py
+│ ├── apps.py
+│ ├── admin.py
+│ ├── tests.py
+│ ├── urls.py
+│ └── views.py
+│ ├── trabajadores/
+│ ├── models.py
+│ ├── serializers.py
+│ ├── **init**.py
+│ ├── apps.py
+│ ├── admin.py
+│ ├── tests.py
+│ ├── urls.py
+│ └── views.py
+│ ├── transacciones/
+│ ├── models.py
+│ ├── serializers.py
+│ ├── **init**.py
+│ ├── apps.py
+│ ├── admin.py
+│ ├── tests.py
+│ ├── urls.py
+│ └── views.py
+│ ├── planillas/
+│ ├── models.py
+│ ├── serializers.py
+│ ├── **init**.py
+│ ├── apps.py
+│ ├── admin.py
+│ ├── tests.py
+│ ├── urls.py
+│ └── views.py
+│ ├── auditoria/
+│ ├── models.py
+│ ├── serializers.py
+│ ├── **init**.py
+│ ├── apps.py
+│ ├── admin.py
+│ ├── tests.py
+│ ├── urls.py
+│ └── views.py
 
 ## Contenido de los Archivos:
+
 **Ruta: /Volumes/Datos/Trabajo/Sistemas/Planilla/backend/planillas/planillas/asgi.py**
+
 ```Python
 """
 ASGI config for planillas project.
@@ -114,12 +113,15 @@ os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'planillas.settings')
 application = get_asgi_application()
 ```
 
-**Ruta: /Volumes/Datos/Trabajo/Sistemas/Planilla/backend/planillas/planillas/__init__.py**
+**Ruta: /Volumes/Datos/Trabajo/Sistemas/Planilla/backend/planillas/planillas/**init**.py**
+
 ```Python
+
 ```
 
 **Ruta: /Volumes/Datos/Trabajo/Sistemas/Planilla/backend/planillas/planillas/settings.py**
-```Python
+
+````Python
 """
 Django settings for planillas project.
 
@@ -306,9 +308,10 @@ urlpatterns = [
     path('redoc/', schema_view.with_ui('redoc', cache_timeout=0), name='schema-redoc'),
     re_path(r'^$', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui-redirect'),
 ]
-```
+````
 
 **Ruta: /Volumes/Datos/Trabajo/Sistemas/Planilla/backend/planillas/planillas/wsgi.py**
+
 ```Python
 """
 WSGI config for planillas project.
@@ -328,11 +331,14 @@ os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'planillas.settings')
 application = get_wsgi_application()
 ```
 
-**Ruta: /Volumes/Datos/Trabajo/Sistemas/Planilla/backend/planillas/apps/__init__.py**
+**Ruta: /Volumes/Datos/Trabajo/Sistemas/Planilla/backend/planillas/apps/**init**.py**
+
 ```Python
+
 ```
 
 **Ruta: /Volumes/Datos/Trabajo/Sistemas/Planilla/backend/planillas/apps/middleware.py**
+
 ```Python
 # apps/middleware.py
 from django.http import HttpResponseForbidden
@@ -351,6 +357,7 @@ class UgelRestrictionMiddleware:
 ```
 
 **Ruta: /Volumes/Datos/Trabajo/Sistemas/Planilla/backend/planillas/apps/procesos/models.py**
+
 ```Python
 from django.db import models
 
@@ -358,6 +365,7 @@ from django.db import models
 ```
 
 **Ruta: /Volumes/Datos/Trabajo/Sistemas/Planilla/backend/planillas/apps/procesos/serializers.py**
+
 ```Python
 # apps/procesos/serializers.py
 from rest_framework import serializers
@@ -367,11 +375,14 @@ class ProcesarPlanillaSerializer(serializers.Serializer):
     tipo_planilla = serializers.IntegerField()
 ```
 
-**Ruta: /Volumes/Datos/Trabajo/Sistemas/Planilla/backend/planillas/apps/procesos/__init__.py**
+**Ruta: /Volumes/Datos/Trabajo/Sistemas/Planilla/backend/planillas/apps/procesos/**init**.py**
+
 ```Python
+
 ```
 
 **Ruta: /Volumes/Datos/Trabajo/Sistemas/Planilla/backend/planillas/apps/procesos/apps.py**
+
 ```Python
 from django.apps import AppConfig
 
@@ -382,6 +393,7 @@ class ProcesosConfig(AppConfig):
 ```
 
 **Ruta: /Volumes/Datos/Trabajo/Sistemas/Planilla/backend/planillas/apps/procesos/admin.py**
+
 ```Python
 # apps/procesos/admin.py
 from django.contrib import admin
@@ -390,6 +402,7 @@ from django.contrib import admin
 ```
 
 **Ruta: /Volumes/Datos/Trabajo/Sistemas/Planilla/backend/planillas/apps/procesos/utils.py**
+
 ```Python
 from django.db import transaction
 from apps.planillas.models import Planilla, Contrato, Boleta
@@ -420,6 +433,7 @@ def generar_boletas_para_planilla(planilla_id):
 ```
 
 **Ruta: /Volumes/Datos/Trabajo/Sistemas/Planilla/backend/planillas/apps/procesos/tests.py**
+
 ```Python
 from django.test import TestCase
 
@@ -427,6 +441,7 @@ from django.test import TestCase
 ```
 
 **Ruta: /Volumes/Datos/Trabajo/Sistemas/Planilla/backend/planillas/apps/procesos/urls.py**
+
 ```Python
 # apps/procesos/urls.py
 from django.urls import path
@@ -438,6 +453,7 @@ urlpatterns = [
 ```
 
 **Ruta: /Volumes/Datos/Trabajo/Sistemas/Planilla/backend/planillas/apps/procesos/views.py**
+
 ```Python
 # apps/procesos/views.py
 from django.db import models
@@ -498,6 +514,7 @@ class ProcesarPlanillaView(APIView):
 ```
 
 **Ruta: /Volumes/Datos/Trabajo/Sistemas/Planilla/backend/planillas/apps/procesos/management/commands/generar_boletas.py**
+
 ```Python
 from django.core.management.base import BaseCommand
 from apps.procesos.utils import generar_boletas_para_planilla
@@ -519,6 +536,7 @@ class Command(BaseCommand):
 ```
 
 **Ruta: /Volumes/Datos/Trabajo/Sistemas/Planilla/backend/planillas/apps/reportes/models.py**
+
 ```Python
 from django.db import models
 
@@ -526,7 +544,8 @@ from django.db import models
 ```
 
 **Ruta: /Volumes/Datos/Trabajo/Sistemas/Planilla/backend/planillas/apps/reportes/serializers.py**
-```Python
+
+````Python
 # apps/reportes/serializers.py
 from rest_framework import serializers
 from apps.trabajadores.models import Trabajador
@@ -569,9 +588,10 @@ class PlanillaBeneficiarioSerializer(serializers.ModelSerializer):
 
 **Ruta: /Volumes/Datos/Trabajo/Sistemas/Planilla/backend/planillas/apps/reportes/__init__.py**
 ```Python
-```
+````
 
 **Ruta: /Volumes/Datos/Trabajo/Sistemas/Planilla/backend/planillas/apps/reportes/apps.py**
+
 ```Python
 from django.apps import AppConfig
 
@@ -582,6 +602,7 @@ class ReportesConfig(AppConfig):
 ```
 
 **Ruta: /Volumes/Datos/Trabajo/Sistemas/Planilla/backend/planillas/apps/reportes/admin.py**
+
 ```Python
 # apps/reportes/admin.py
 from django.contrib import admin
@@ -590,6 +611,7 @@ from apps.planillas.models import Contrato
 ```
 
 **Ruta: /Volumes/Datos/Trabajo/Sistemas/Planilla/backend/planillas/apps/reportes/tests.py**
+
 ```Python
 from django.test import TestCase
 
@@ -597,6 +619,7 @@ from django.test import TestCase
 ```
 
 **Ruta: /Volumes/Datos/Trabajo/Sistemas/Planilla/backend/planillas/apps/reportes/urls.py**
+
 ```Python
 # apps/reportes/urls.py
 from rest_framework.routers import DefaultRouter
@@ -617,6 +640,7 @@ urlpatterns = router.urls
 ```
 
 **Ruta: /Volumes/Datos/Trabajo/Sistemas/Planilla/backend/planillas/apps/reportes/views.py**
+
 ```Python
 # apps/reportes/views.py
 from rest_framework import viewsets
@@ -686,6 +710,7 @@ class ReporteTrabajadoresPorVinculoViewSet(viewsets.ReadOnlyModelViewSet):
 ```
 
 **Ruta: /Volumes/Datos/Trabajo/Sistemas/Planilla/backend/planillas/apps/configuracion/models.py**
+
 ```Python
 # apps/configuracion/models.py
 from django.db import models
@@ -1057,7 +1082,8 @@ class TipoDeCuenta(models.Model):
 ```
 
 **Ruta: /Volumes/Datos/Trabajo/Sistemas/Planilla/backend/planillas/apps/configuracion/serializers.py**
-```Python
+
+````Python
 # apps/configuracion/serializers.py
 from rest_framework import serializers
 from .models import Ugel, TipoPlanilla, ClasePlanilla, FuenteFinanciamiento, Periodo, Transaccion, Cargo, RegimenLaboral, TipoServidor, RegimenPensionario, Afp, Banco, Situacion, TipoDocumento, Sexo, TipoDescuento, TipoBeneficiario, EstadoCivil
@@ -1158,9 +1184,10 @@ class EstadoCivilSerializer(serializers.ModelSerializer):
 
 **Ruta: /Volumes/Datos/Trabajo/Sistemas/Planilla/backend/planillas/apps/configuracion/__init__.py**
 ```Python
-```
+````
 
 **Ruta: /Volumes/Datos/Trabajo/Sistemas/Planilla/backend/planillas/apps/configuracion/apps.py**
+
 ```Python
 from django.apps import AppConfig
 
@@ -1171,7 +1198,8 @@ class ConfiguracionConfig(AppConfig):
 ```
 
 **Ruta: /Volumes/Datos/Trabajo/Sistemas/Planilla/backend/planillas/apps/configuracion/admin.py**
-```Python
+
+````Python
 from django.contrib import admin
 from .models import Ugel, TipoPlanilla, ClasePlanilla, FuenteFinanciamiento, Periodo, Transaccion, Cargo, RegimenLaboral, TipoServidor, RegimenPensionario, Afp, Banco, Situacion, TipoDocumento, Sexo, EstadoCivil
 from apps.transacciones.models import TransaccionTrabajador
@@ -1290,9 +1318,10 @@ class EstadoCivilAdmin(admin.ModelAdmin):
 from django.test import TestCase
 
 # Create your tests here.
-```
+````
 
 **Ruta: /Volumes/Datos/Trabajo/Sistemas/Planilla/backend/planillas/apps/configuracion/urls.py**
+
 ```Python
 # apps/configuracion/urls.py
 from rest_framework.routers import DefaultRouter
@@ -1323,7 +1352,8 @@ urlpatterns = router.urls
 ```
 
 **Ruta: /Volumes/Datos/Trabajo/Sistemas/Planilla/backend/planillas/apps/configuracion/views.py**
-```Python
+
+````Python
 from django.shortcuts import render
 from rest_framework import viewsets
 from .models import Ugel, TipoPlanilla, ClasePlanilla, FuenteFinanciamiento, Periodo, Transaccion, Cargo, RegimenLaboral, TipoServidor, RegimenPensionario, Afp, Banco, Situacion, TipoDocumento, Sexo, TipoDescuento, TipoBeneficiario, EstadoCivil
@@ -1599,10 +1629,11 @@ class BeneficiarioSerializer(serializers.ModelSerializer):
 
 **Ruta: /Volumes/Datos/Trabajo/Sistemas/Planilla/backend/planillas/apps/usuarios/__init__.py**
 ```Python
-```
+````
 
 **Ruta: /Volumes/Datos/Trabajo/Sistemas/Planilla/backend/planillas/apps/usuarios/apps.py**
-```Python
+
+````Python
 from django.apps import AppConfig
 
 
@@ -1666,9 +1697,10 @@ class BeneficiarioAdmin(admin.ModelAdmin):
 from django.test import TestCase
 
 # Create your tests here.
-```
+````
 
 **Ruta: /Volumes/Datos/Trabajo/Sistemas/Planilla/backend/planillas/apps/usuarios/urls.py**
+
 ```Python
 # apps/usuarios/urls.py
 from rest_framework.routers import DefaultRouter
@@ -1684,6 +1716,7 @@ urlpatterns = router.urls
 ```
 
 **Ruta: /Volumes/Datos/Trabajo/Sistemas/Planilla/backend/planillas/apps/usuarios/views.py**
+
 ```Python
 # apps/usuarios/views.py
 from rest_framework import viewsets
@@ -1709,6 +1742,7 @@ class BeneficiarioViewSet(viewsets.ModelViewSet):
 ```
 
 **Ruta: /Volumes/Datos/Trabajo/Sistemas/Planilla/backend/planillas/apps/trabajadores/models.py**
+
 ```Python
 # apps/trabajadores/models.py
 from django.db import models
@@ -1743,6 +1777,7 @@ class Trabajador(models.Model):
 ```
 
 **Ruta: /Volumes/Datos/Trabajo/Sistemas/Planilla/backend/planillas/apps/trabajadores/serializers.py**
+
 ```Python
 # apps/trabajadores/serializers.py
 from rest_framework import serializers
@@ -1754,11 +1789,14 @@ class TrabajadorSerializer(serializers.ModelSerializer):
         fields = '__all__'
 ```
 
-**Ruta: /Volumes/Datos/Trabajo/Sistemas/Planilla/backend/planillas/apps/trabajadores/__init__.py**
+**Ruta: /Volumes/Datos/Trabajo/Sistemas/Planilla/backend/planillas/apps/trabajadores/**init**.py**
+
 ```Python
+
 ```
 
 **Ruta: /Volumes/Datos/Trabajo/Sistemas/Planilla/backend/planillas/apps/trabajadores/apps.py**
+
 ```Python
 from django.apps import AppConfig
 
@@ -1769,6 +1807,7 @@ class TrabajadoresConfig(AppConfig):
 ```
 
 **Ruta: /Volumes/Datos/Trabajo/Sistemas/Planilla/backend/planillas/apps/trabajadores/admin.py**
+
 ```Python
 # apps/trabajadores/admin.py
 from django.contrib import admin
@@ -1783,6 +1822,7 @@ class TrabajadorAdmin(admin.ModelAdmin):
 ```
 
 **Ruta: /Volumes/Datos/Trabajo/Sistemas/Planilla/backend/planillas/apps/trabajadores/tests.py**
+
 ```Python
 from django.test import TestCase
 
@@ -1790,6 +1830,7 @@ from django.test import TestCase
 ```
 
 **Ruta: /Volumes/Datos/Trabajo/Sistemas/Planilla/backend/planillas/apps/trabajadores/urls.py**
+
 ```Python
 from rest_framework.routers import DefaultRouter
 from .views import (
@@ -1803,6 +1844,7 @@ urlpatterns = router.urls
 ```
 
 **Ruta: /Volumes/Datos/Trabajo/Sistemas/Planilla/backend/planillas/apps/trabajadores/views.py**
+
 ```Python
 from rest_framework import viewsets
 from rest_framework.permissions import IsAuthenticated
@@ -1823,6 +1865,7 @@ class TrabajadorViewSet(viewsets.ModelViewSet):
 ```
 
 **Ruta: /Volumes/Datos/Trabajo/Sistemas/Planilla/backend/planillas/apps/transacciones/models.py**
+
 ```Python
 # apps/transacciones/models.py
 from django.core.exceptions import ValidationError
@@ -1856,6 +1899,7 @@ class TransaccionTrabajador(models.Model):
 ```
 
 **Ruta: /Volumes/Datos/Trabajo/Sistemas/Planilla/backend/planillas/apps/transacciones/serializers.py**
+
 ```Python
 # apps/transacciones/serializers.py
 from rest_framework import serializers
@@ -1868,11 +1912,14 @@ class TransaccionTrabajadorSerializer(serializers.ModelSerializer):
         ref_name = 'TransaccionTrabajadorSerializerTransacciones'
 ```
 
-**Ruta: /Volumes/Datos/Trabajo/Sistemas/Planilla/backend/planillas/apps/transacciones/__init__.py**
+**Ruta: /Volumes/Datos/Trabajo/Sistemas/Planilla/backend/planillas/apps/transacciones/**init**.py**
+
 ```Python
+
 ```
 
 **Ruta: /Volumes/Datos/Trabajo/Sistemas/Planilla/backend/planillas/apps/transacciones/apps.py**
+
 ```Python
 from django.apps import AppConfig
 
@@ -1883,7 +1930,8 @@ class TransaccionesConfig(AppConfig):
 ```
 
 **Ruta: /Volumes/Datos/Trabajo/Sistemas/Planilla/backend/planillas/apps/transacciones/admin.py**
-```Python
+
+````Python
 # apps/transacciones/admin.py
 from django.contrib import admin
 from .models import TransaccionTrabajador
@@ -1892,9 +1940,7 @@ from .models import TransaccionTrabajador
 class TransaccionTrabajadorAdmin(admin.ModelAdmin):
     list_display = ('contrato', 'transaccion', 'monto', 'periodo_inicial', 'periodo_final', 'estado')
     search_fields = (
-        'contrato__trabajador__persona__nombres',
-        'contrato__trabajador__persona__apellido_paterno',
-        'contrato__trabajador__persona__apellido_materno',
+        'contrato__trabajador__persona__get_full_name',
         'transaccion__descripcion'
     )
     list_filter = ('estado', 'transaccion__tipo_transaccion')
@@ -1906,9 +1952,10 @@ class TransaccionTrabajadorAdmin(admin.ModelAdmin):
 from django.test import TestCase
 
 # Create your tests here.
-```
+````
 
 **Ruta: /Volumes/Datos/Trabajo/Sistemas/Planilla/backend/planillas/apps/transacciones/urls.py**
+
 ```Python
 # apps/transacciones/urls.py
 from rest_framework.routers import DefaultRouter
@@ -1921,6 +1968,7 @@ urlpatterns = router.urls
 ```
 
 **Ruta: /Volumes/Datos/Trabajo/Sistemas/Planilla/backend/planillas/apps/transacciones/views.py**
+
 ```Python
 # apps/transacciones/views.py
 from rest_framework import viewsets
@@ -1935,6 +1983,7 @@ class TransaccionTrabajadorViewSet(viewsets.ModelViewSet):
 ```
 
 **Ruta: /Volumes/Datos/Trabajo/Sistemas/Planilla/backend/planillas/apps/planillas/models.py**
+
 ```Python
 # apps/planillas/models.py
 from django.db import models
@@ -2086,7 +2135,8 @@ class PlanillaBeneficiario(models.Model):
 ```
 
 **Ruta: /Volumes/Datos/Trabajo/Sistemas/Planilla/backend/planillas/apps/planillas/serializers.py**
-```Python
+
+````Python
 # apps/planillas/serializers.py
 from rest_framework import serializers
 from .models import Periodo, PlanillaBeneficiario, Contrato, Planilla, Boleta
@@ -2176,9 +2226,10 @@ class BoletaSerializer(serializers.ModelSerializer):
 
 **Ruta: /Volumes/Datos/Trabajo/Sistemas/Planilla/backend/planillas/apps/planillas/__init__.py**
 ```Python
-```
+````
 
 **Ruta: /Volumes/Datos/Trabajo/Sistemas/Planilla/backend/planillas/apps/planillas/apps.py**
+
 ```Python
 from django.apps import AppConfig
 
@@ -2189,6 +2240,7 @@ class PlanillasConfig(AppConfig):
 ```
 
 **Ruta: /Volumes/Datos/Trabajo/Sistemas/Planilla/backend/planillas/apps/planillas/admin.py**
+
 ```Python
 # apps/planillas/admin.py
 from django.contrib import admin
@@ -2206,8 +2258,7 @@ class PlanillaBeneficiarioAdmin(admin.ModelAdmin):
 @admin.register(Contrato)
 class ContratoAdmin(admin.ModelAdmin):
     list_display = ('trabajador', 'fuente_financiamiento', 'cargo', 'fecha_ingreso', 'fecha_cese', 'situacion')
-    #search_fields = ('trabajador__persona__nombres', 'trabajador__persona__paterno', 'trabajador__persona__materno', 'cargo__nombre_cargo')
-    search_fields = ['nombre_completo_trabajador', 'trabajador__persona__numero_documento']
+    search_fields = ('trabajador__persona__nombres', 'trabajador__persona__paterno', 'trabajador__persona__materno', 'cargo__nombre_cargo')
     list_filter = ('situacion', 'cargo', 'fecha_ingreso', 'fecha_cese')
     ordering = ('trabajador', 'fecha_ingreso')
     inlines = [TransaccionTrabajadorInline]
@@ -2250,6 +2301,7 @@ class PlanillaAdmin(admin.ModelAdmin):
 ```
 
 **Ruta: /Volumes/Datos/Trabajo/Sistemas/Planilla/backend/planillas/apps/planillas/tests.py**
+
 ```Python
 from django.test import TestCase
 
@@ -2257,6 +2309,7 @@ from django.test import TestCase
 ```
 
 **Ruta: /Volumes/Datos/Trabajo/Sistemas/Planilla/backend/planillas/apps/planillas/urls.py**
+
 ```Python
 # apps/planillas/urls.py
 from rest_framework.routers import DefaultRouter
@@ -2274,7 +2327,8 @@ urlpatterns = router.urls
 ```
 
 **Ruta: /Volumes/Datos/Trabajo/Sistemas/Planilla/backend/planillas/apps/planillas/views.py**
-```Python
+
+````Python
 # apps/planillas/views.py
 from django.db.models import Max
 from rest_framework import viewsets
@@ -2398,9 +2452,10 @@ class Auditoria(models.Model):
         ordering = ['-fecha']
         verbose_name = 'Auditoría'
         verbose_name_plural = 'Auditorías'
-```
+````
 
 **Ruta: /Volumes/Datos/Trabajo/Sistemas/Planilla/backend/planillas/apps/auditoria/serializers.py**
+
 ```Python
 # apps/auditoria/serializers.py
 from rest_framework import serializers
@@ -2412,11 +2467,14 @@ class AuditoriaSerializer(serializers.ModelSerializer):
         fields = ['id', 'fecha', 'descripcion', 'persona', 'ip_address', 'user_agent', 'accion']
 ```
 
-**Ruta: /Volumes/Datos/Trabajo/Sistemas/Planilla/backend/planillas/apps/auditoria/__init__.py**
+**Ruta: /Volumes/Datos/Trabajo/Sistemas/Planilla/backend/planillas/apps/auditoria/**init**.py**
+
 ```Python
+
 ```
 
 **Ruta: /Volumes/Datos/Trabajo/Sistemas/Planilla/backend/planillas/apps/auditoria/apps.py**
+
 ```Python
 from django.apps import AppConfig
 
@@ -2427,6 +2485,7 @@ class AuditoriaConfig(AppConfig):
 ```
 
 **Ruta: /Volumes/Datos/Trabajo/Sistemas/Planilla/backend/planillas/apps/auditoria/admin.py**
+
 ```Python
 # apps/auditoria/admin.py
 from django.contrib import admin
@@ -2441,6 +2500,7 @@ class AuditoriaAdmin(admin.ModelAdmin):
 ```
 
 **Ruta: /Volumes/Datos/Trabajo/Sistemas/Planilla/backend/planillas/apps/auditoria/tests.py**
+
 ```Python
 from django.test import TestCase
 
@@ -2448,6 +2508,7 @@ from django.test import TestCase
 ```
 
 **Ruta: /Volumes/Datos/Trabajo/Sistemas/Planilla/backend/planillas/apps/auditoria/urls.py**
+
 ```Python
 # apps/auditoria/urls.py
 from rest_framework.routers import DefaultRouter
@@ -2460,6 +2521,7 @@ urlpatterns = router.urls
 ```
 
 **Ruta: /Volumes/Datos/Trabajo/Sistemas/Planilla/backend/planillas/apps/auditoria/views.py**
+
 ```Python
 # apps/auditoria/views.py
 from rest_framework import viewsets
@@ -2470,4 +2532,3 @@ class AuditoriaViewSet(viewsets.ModelViewSet):
     queryset = Auditoria.objects.all()
     serializer_class = AuditoriaSerializer
 ```
-

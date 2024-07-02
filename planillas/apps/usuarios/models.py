@@ -62,6 +62,7 @@ class Persona(models.Model):
     def __str__(self):
         return f'{self.nombres} {self.apellido_paterno} {self.apellido_materno}'
 
+
     def get_full_name(self):
         return f'{self.nombres} {self.apellido_paterno} {self.apellido_materno}'.strip()
 

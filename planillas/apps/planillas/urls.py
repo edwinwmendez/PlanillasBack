@@ -6,6 +6,7 @@ router = DefaultRouter()
 router.register(r'contratos', ContratoViewSet)
 router.register(r'planillas', PlanillaViewSet)
 router.register(r'boletas', BoletaViewSet)
+
 router.register(r'planillas-beneficiarios', PlanillaBeneficiarioViewSet)
 
 

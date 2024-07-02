@@ -5,6 +5,7 @@ from .models import Trabajador
 @admin.register(Trabajador)
 class TrabajadorAdmin(admin.ModelAdmin):
     list_display = ('persona', 'estado')
-    search_fields = ('persona__nombres', 'persona__apellido_paterno', 'persona__materno', 'cargo__nombre_cargo')
+    search_fields = ('persona__nombres', 'persona__apellido_paterno', 'persona__apellido_materno')
     list_filter = ('estado',)
     ordering = ('persona__apellido_paterno', 'persona__apellido_materno', 'persona__nombres')
+    autocomplete_fields = ['persona']

@@ -4,7 +4,8 @@ from apps.usuarios.models import Persona
 
 class Trabajador(models.Model):
     ugel = models.ForeignKey('configuracion.Ugel', on_delete=models.CASCADE, verbose_name='UGEL')
-    persona = models.ForeignKey(Persona, on_delete=models.CASCADE, verbose_name='Persona', related_name='empleados')
+    persona = models.OneToOneField(Persona, on_delete=models.CASCADE, verbose_name='Persona', related_name='empleados')
+    #persona = models.ForeignKey(Persona, on_delete=models.CASCADE, verbose_name='Persona', related_name='empleados')
     tiempo_servicios = models.IntegerField(null=True, blank=True, verbose_name='Tiempo de Servicios')
     regimen_pensionario = models.ForeignKey('configuracion.RegimenPensionario', on_delete=models.CASCADE, verbose_name='Régimen Pensionario')
     afp = models.ForeignKey('configuracion.Afp', on_delete=models.CASCADE, verbose_name='AFP')
