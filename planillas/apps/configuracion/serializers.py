@@ -1,6 +1,6 @@
 # apps/configuracion/serializers.py
 from rest_framework import serializers
-from .models import Ugel, TipoPlanilla, ClasePlanilla, FuenteFinanciamiento, Periodo, Transaccion, Cargo, RegimenLaboral, TipoServidor, RegimenPensionario, Afp, Banco, Situacion, TipoDocumento, Sexo, TipoDescuento, TipoBeneficiario, EstadoCivil
+from .models import Ugel, TipoPlanilla, ClasePlanilla, FuenteFinanciamiento, Periodo, Transaccion, Cargo, RegimenLaboral, TipoServidor, RegimenPensionario, Afp, Banco, Situacion, TipoDocumento, Sexo, TipoDescuento, TipoBeneficiario, EstadoCivil, ComisionAfp
 
 class UgelSerializer(serializers.ModelSerializer):
     class Meta:
@@ -94,4 +94,9 @@ class TipoBeneficiarioSerializer(serializers.ModelSerializer):
 class EstadoCivilSerializer(serializers.ModelSerializer):
     class Meta:
         model = EstadoCivil
+        fields = '__all__'
+
+class ComisionAfpSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ComisionAfp
         fields = '__all__'

@@ -1,11 +1,11 @@
 # apps/planillas/serializers.py
 from rest_framework import serializers
 from .models import Periodo, PlanillaBeneficiario, Contrato, Planilla, Boleta
-from apps.transacciones.models import TransaccionTrabajador
+from apps.transacciones.models import TransaccionContrato
 
 class TransaccionTrabajadorSerializer(serializers.ModelSerializer):
     class Meta:
-        model = TransaccionTrabajador
+        model = TransaccionContrato
         fields = '__all__'
         extra_kwargs = {
             'contrato': {'required': False, 'allow_null': True},
@@ -33,7 +33,7 @@ class ContratoSerializer(serializers.ModelSerializer):
         contrato = Contrato.objects.create(**validated_data)
         for transaccion_data in transacciones_data:
             if transaccion_data:  # Verificar que transaccion_data no esté vacío
-                TransaccionTrabajador.objects.create(contrato=contrato, **transaccion_data)
+                TransaccionContrato.objects.create(contrato=contrato, **transaccion_data)
         return contrato
 
     def update(self, instance, validated_data):
@@ -44,7 +44,7 @@ class ContratoSerializer(serializers.ModelSerializer):
             instance.transacciones.all().delete()  # Elimina las transacciones existentes
             for transaccion_data in transacciones_data:
                 if transaccion_data:  # Verificar que transaccion_data no esté vacío
-                    TransaccionTrabajador.objects.create(contrato=instance, **transaccion_data)
+                    TransaccionContrato.objects.create(contrato=instance, **transaccion_data)
 
         return instance
 

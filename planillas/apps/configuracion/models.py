@@ -90,6 +90,7 @@ class Periodo(models.Model):
     periodo = models.CharField(max_length=6, unique=True, blank=True, verbose_name='Periodo', editable=False)
     es_adicional = models.BooleanField(default=False, verbose_name='¿Es adicional?')
     periodo_actual = models.CharField(max_length=6, blank=True, verbose_name='Periodo Actual', editable=False, null=True, default=None)
+    estado = models.BooleanField(default=True, verbose_name='Activo')
     created = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)
 
@@ -365,3 +366,23 @@ class ConceptoRemunerativo(models.Model):
 class TipoDeCuenta(models.Model):
     pass
 
+
+class ComisionAfp(models.Model):
+    periodo = models.ForeignKey(Periodo, on_delete=models.CASCADE, verbose_name='Periodo')
+    afp = models.ForeignKey(Afp, on_delete=models.CASCADE, verbose_name='AFP')
+    comision_flujo = models.DecimalField(max_digits=8, decimal_places=2, verbose_name='Comisión por Flujo')
+    comision_mixta = models.DecimalField(max_digits=8, decimal_places=2, verbose_name='Comisión Mixta')
+    prima_seguro = models.DecimalField(max_digits=8, decimal_places=2, verbose_name='Prima de Seguro')
+    aporte_obligatorio = models.DecimalField(max_digits=8, decimal_places=2, verbose_name='Aporte Obligatorio')
+    total_comision = models.DecimalField(max_digits=8, decimal_places=2, verbose_name='Total Comisión')
+    created = models.DateTimeField(auto_now_add=True)
+    updated = models.DateTimeField(auto_now=True)
+    
+    def __str__(self):
+        return self.afp.nombre_afp + ' - ' + self.periodo.periodo + ' - ' + str(self.total_comision)
+
+    class Meta:
+        db_table = 'comision_afp'
+        ordering = ['periodo']
+        verbose_name = 'Comisión AFP'
+        verbose_name_plural = 'Comisiones AFP'

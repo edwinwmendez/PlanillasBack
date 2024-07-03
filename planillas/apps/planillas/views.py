@@ -4,7 +4,7 @@ from rest_framework import viewsets
 from rest_framework.permissions import IsAuthenticated
 from .models import PlanillaBeneficiario, Contrato, Planilla, Boleta
 from .serializers import PlanillaBeneficiarioSerializer, ContratoSerializer, PlanillaSerializer, BoletaSerializer
-from apps.transacciones.models import TransaccionTrabajador
+from apps.transacciones.models import TransaccionContrato
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
@@ -32,7 +32,7 @@ class ProcesarPlanillaView(APIView):
         if not periodo:
             return Response({"error": "Debe especificar un período."}, status=status.HTTP_400_BAD_REQUEST)
 
-        transacciones = TransaccionTrabajador.objects.filter(
+        transacciones = TransaccionContrato.objects.filter(
             periodo_inicial__lte=periodo,
             periodo_final__gte=periodo
         )

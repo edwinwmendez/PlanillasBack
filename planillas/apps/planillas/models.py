@@ -3,8 +3,8 @@ from django.db import models
 from apps.trabajadores.models import Trabajador
 from apps.usuarios.models import Beneficiario
 from apps.configuracion.models import Cargo, RegimenLaboral, TipoServidor, ClasePlanilla, FuenteFinanciamiento, Situacion, Periodo
-from django.utils import timezone
-from django.db.models import Sum, Max
+
+
 
 
 
@@ -40,38 +40,7 @@ class Contrato(models.Model):
 
     def save(self, *args, **kwargs):
         super().save(*args, **kwargs)
-        self.registrar_transacciones()
 
-    def registrar_transacciones(self):
-        from apps.transacciones.models import TransaccionTrabajador
-        from apps.configuracion.models import Transaccion
-
-        if self.clase_planilla.codigo_clase_planilla == '03':  # CAS
-            transaccion = Transaccion.objects.get(id=1)  # Remuneracion CAS
-            periodo_inicial = self.fecha_ingreso.strftime('%Y%m')
-            periodo_final = self.fecha_cese.strftime('%Y%m')
-
-             # Calcular la remuneración proporcional a los días trabajados
-            sueldo_proporcional = (self.sueldo / 30) * self.dias_laborados
-
-            # Verificar si ya existe una transacción activa que cubra el período actual
-            existe_transaccion_activa = TransaccionTrabajador.objects.filter(
-                contrato=self,
-                transaccion=transaccion,
-                estado=True,
-                periodo_inicial__lte=periodo_final,
-                periodo_final__gte=periodo_inicial
-            ).exists()
-
-            if not existe_transaccion_activa:
-                TransaccionTrabajador.objects.create(
-                    contrato=self,
-                    transaccion=transaccion,
-                    monto=sueldo_proporcional,
-                    periodo_inicial=periodo_inicial,
-                    periodo_final=periodo_final,
-                    estado=True
-                )
 
 
 class Planilla(models.Model):
@@ -101,10 +70,10 @@ class Planilla(models.Model):
 class Boleta(models.Model):
     contrato = models.ForeignKey(Contrato, on_delete=models.CASCADE, related_name='boletas')
     planilla = models.ForeignKey(Planilla, on_delete=models.CASCADE, related_name='boletas')
-    total_haberes = models.DecimalField(max_digits=12, decimal_places=2, default=0, verbose_name='Total Haberes', editable=False)
-    total_descuentos = models.DecimalField(max_digits=12, decimal_places=2, default=0, verbose_name='Total Descuentos', editable=False)
-    total_aportes = models.DecimalField(max_digits=12, decimal_places=2, default=0, verbose_name='Total Aportes', editable=False)
-    neto_a_pagar = models.DecimalField(max_digits=12, decimal_places=2, default=0, verbose_name='Neto a Pagar', editable=False)
+    total_haberes = models.DecimalField(max_digits=12, decimal_places=2, default=0, verbose_name='Total Haberes')
+    total_descuentos = models.DecimalField(max_digits=12, decimal_places=2, default=0, verbose_name='Total Descuentos')
+    total_aportes = models.DecimalField(max_digits=12, decimal_places=2, default=0, verbose_name='Total Aportes')
+    neto_a_pagar = models.DecimalField(max_digits=12, decimal_places=2, default=0, verbose_name='Neto a Pagar')
     numero_boleta = models.CharField(max_length=3, verbose_name='Número de Boleta', editable=False)
     visualizada = models.BooleanField(default=False, verbose_name='Visualizada', editable=False)
     fecha_visualizacion = models.DateTimeField(null=True, blank=True, verbose_name='Fecha de Visualización', editable=False)
@@ -113,49 +82,36 @@ class Boleta(models.Model):
     created = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)
 
-    def calcular_totales(self):
-        transacciones = self.contrato.transacciones.filter(
-            periodo_inicial__lte=self.planilla.periodo,
-            periodo_final__gte=self.planilla.periodo,
-            estado=True
-        )
-        self.total_haberes = transacciones.filter(transaccion__tipo_transaccion='HABER').aggregate(Sum('monto'))['monto__sum'] or 0
-        self.total_descuentos = transacciones.filter(transaccion__tipo_transaccion='DESCUENTO').aggregate(Sum('monto'))['monto__sum'] or 0
-        self.total_aportes = transacciones.filter(transaccion__tipo_transaccion='APORTE').aggregate(Sum('monto'))['monto__sum'] or 0
-        self.neto_a_pagar = self.total_haberes - self.total_descuentos
+    # Datos del contrato en el momento de la generación de la boleta
+    centro_de_trabajo = models.CharField(max_length=255, blank=True, verbose_name='Centro de Trabajo')
+    cargo = models.CharField(max_length=255, blank=True, verbose_name='Cargo')
+    fecha_ingreso = models.DateField(null=True, blank=True, verbose_name='Fecha de Ingreso')
+    fecha_cese = models.DateField(null=True, blank=True, verbose_name='Fecha de Cese')
+    clase_planilla = models.CharField(max_length=255, blank=True, verbose_name='Clase de Planilla')
+    fuente_financiamiento = models.CharField(max_length=255, blank=True, verbose_name='Fuente de Financiamiento')
+    sueldo = models.DecimalField(max_digits=8, decimal_places=2, null=True, blank=True, verbose_name='Sueldo')
+    dias_laborados = models.IntegerField(null=True, blank=True, verbose_name='Días Laborados', default=30)
+    leyenda_permanente = models.CharField(max_length=255, blank=True, verbose_name='Leyenda Permanente')
+    jornada_laboral = models.IntegerField(null=True, blank=True, verbose_name='Jornada Laboral', default=48)
 
-    def generar_numero_boleta(self):
-        # Obtener el número de boleta más alto del período actual
-        max_numero_boleta = Boleta.objects.filter(planilla=self.planilla).aggregate(Max('numero_boleta'))['numero_boleta__max']
-        if max_numero_boleta:
-            # Incrementar el número de boleta
-            self.numero_boleta = str(int(max_numero_boleta) + 1).zfill(3)
-        else:
-            # Si no hay boletas en el período, comenzar con '001'
-            self.numero_boleta = '001'
+    # Datos del trabajador en el momento de la generación de la boleta
+    trabajador_nombres = models.CharField(max_length=255, verbose_name='Nombres del Trabajador')
+    trabajador_apellidos = models.CharField(max_length=255, verbose_name='Apellidos del Trabajador')
+    trabajador_dni = models.CharField(max_length=20, verbose_name='DNI del Trabajador')
+    regimen_laboral = models.CharField(max_length=255, blank=True, verbose_name='Régimen Laboral')
+    tipo_servidor = models.CharField(max_length=255, blank=True, verbose_name='Tipo de Servidor')
+    regimen_pensionario = models.CharField(max_length=255, blank=True, verbose_name='Régimen Pensionario')
+    banco = models.CharField(max_length=255, blank=True, verbose_name='Banco')
+    cuenta_bancaria = models.CharField(max_length=255, blank=True, verbose_name='Cuenta Bancaria')
+
+    # Totales calculados
+    total_haberes = models.DecimalField(max_digits=12, decimal_places=2, default=0, verbose_name='Total Haberes', editable=False)
+    total_descuentos = models.DecimalField(max_digits=12, decimal_places=2, default=0, verbose_name='Total Descuentos', editable=False)
+    total_aportes = models.DecimalField(max_digits=12, decimal_places=2, default=0, verbose_name='Total Aportes', editable=False)
+    neto_a_pagar = models.DecimalField(max_digits=12, decimal_places=2, default=0, verbose_name='Neto a Pagar', editable=False)
 
     def save(self, *args, **kwargs):
-        if not self.numero_boleta:
-            self.generar_numero_boleta()
-        self.calcular_totales()
         super().save(*args, **kwargs)
-        self.actualizar_totales_planilla()
-
-    def actualizar_totales_planilla(self):
-        self.planilla.total_haberes = Boleta.objects.filter(planilla=self.planilla).aggregate(Sum('total_haberes'))['total_haberes__sum'] or 0
-        self.planilla.total_descuentos = Boleta.objects.filter(planilla=self.planilla).aggregate(Sum('total_descuentos'))['total_descuentos__sum'] or 0
-        self.planilla.total_aportes = Boleta.objects.filter(planilla=self.planilla).aggregate(Sum('total_aportes'))['total_aportes__sum'] or 0
-        self.planilla.save()
-
-    def marcar_como_visualizada(self):
-        self.visualizada = True
-        self.fecha_visualizacion = timezone.now()
-        self.save()
-
-    def marcar_como_descargada(self):
-        self.descargada = True
-        self.fecha_descarga = timezone.now()
-        self.save()
 
     def __str__(self):
         return f'{self.contrato} - {self.planilla} - {self.planilla.periodo}'
@@ -166,6 +122,19 @@ class Boleta(models.Model):
         unique_together = ('contrato', 'planilla')
         verbose_name = 'Boleta'
         verbose_name_plural = 'Boletas'
+
+class BoletaTransaccion(models.Model):
+    boleta = models.ForeignKey(Boleta, on_delete=models.CASCADE, related_name='transacciones')
+    tipo = models.CharField(max_length=50, verbose_name='Tipo de Transacción')
+    codigo = models.CharField(max_length=50, verbose_name='Código de Transacción')
+    descripcion = models.CharField(max_length=255, verbose_name='Descripción de Transacción')
+    monto = models.DecimalField(max_digits=12, decimal_places=2, verbose_name='Monto')
+
+    class Meta:
+        db_table = 'boleta_transacciones'
+        verbose_name = 'Boleta Transacción'
+        verbose_name_plural = 'Boleta Transacciones'
+
 
 class PlanillaBeneficiario(models.Model):
     beneficiario = models.ForeignKey(Beneficiario, on_delete=models.CASCADE, verbose_name='Beneficiario')

@@ -2,6 +2,7 @@
 
 ## Estructura del Directorio:
 │├── planillas/
+│    ├── generar_transacciones.py
 │    ├── estructura_de_proyecto1.md
 │    ├── Tablas Parametricas.xlsx
 │    ├── estructura_de_proyecto.md
@@ -94,6 +95,61 @@
 
 
 ## Contenido de los Archivos:
+**Ruta: /Volumes/Datos/Trabajo/Sistemas/Planilla/backend/planillas/generar_transacciones.py**
+```Python
+import random
+
+def generar_insert(contrato_id, transaccion_id, monto_min, monto_max, periodo_inicial, periodo_final, estado):
+    monto = round(random.uniform(monto_min, monto_max), 2)
+    return f"({contrato_id}, {transaccion_id}, {monto}, '{periodo_inicial}', '{periodo_final}', {estado})"
+
+def generar_sql_inserts():
+    contratos_ids = range(1, 126)
+    transacciones_ids = {
+        "haberes": 1,
+        "bonificaciones": 2,
+        "descuentos": 5,
+        "aportes": 4
+    }
+
+    sql_haberes = "INSERT INTO transacciones_trabajadores (contrato_id, transaccion_id, monto, periodo_inicial, periodo_final, estado)\nVALUES\n"
+    sql_bonificaciones = "INSERT INTO transacciones_trabajadores (contrato_id, transaccion_id, monto, periodo_inicial, periodo_final, estado)\nVALUES\n"
+    sql_descuentos = "INSERT INTO transacciones_trabajadores (contrato_id, transaccion_id, monto, periodo_inicial, periodo_final, estado)\nVALUES\n"
+    sql_aportes = "INSERT INTO transacciones_trabajadores (contrato_id, transaccion_id, monto, periodo_inicial, periodo_final, estado)\nVALUES\n"
+
+    haberes_values = []
+    bonificaciones_values = []
+    descuentos_values = []
+    aportes_values = []
+
+    for contrato_id in contratos_ids:
+        haberes_values.append(generar_insert(contrato_id, transacciones_ids["haberes"], 1400, 1700, "202406", "202412", 1))
+        bonificaciones_values.append(generar_insert(contrato_id, transacciones_ids["bonificaciones"], 200, 300, "202406", "202412", 1))
+        descuentos_values.append(generar_insert(contrato_id, transacciones_ids["descuentos"], 100, 200, "202406", "202412", 1))
+        aportes_values.append(generar_insert(contrato_id, transacciones_ids["aportes"], 300, 400, "202406", "202412", 1))
+
+    sql_haberes += ",\n".join(haberes_values) + ";\n"
+    sql_bonificaciones += ",\n".join(bonificaciones_values) + ";\n"
+    sql_descuentos += ",\n".join(descuentos_values) + ";\n"
+    sql_aportes += ",\n".join(aportes_values) + ";\n"
+
+    return sql_haberes, sql_bonificaciones, sql_descuentos, sql_aportes
+
+if __name__ == "__main__":
+    sql_haberes, sql_bonificaciones, sql_descuentos, sql_aportes = generar_sql_inserts()
+    with open("insert_transacciones.sql", "w") as file:
+        file.write("-- Insertar haberes\n")
+        file.write(sql_haberes)
+        file.write("\n-- Insertar bonificaciones\n")
+        file.write(sql_bonificaciones)
+        file.write("\n-- Insertar descuentos\n")
+        file.write(sql_descuentos)
+        file.write("\n-- Insertar aportes\n")
+        file.write(sql_aportes)
+
+    print("Archivo SQL generado con éxito.")
+```
+
 **Ruta: /Volumes/Datos/Trabajo/Sistemas/Planilla/backend/planillas/planillas/asgi.py**
 ```Python
 """
@@ -447,7 +503,7 @@ from rest_framework import status
 from apps.configuracion.models import Periodo, TipoPlanilla
 from apps.trabajadores.models import Trabajador
 from apps.planillas.models import Contrato
-from apps.transacciones.models import TransaccionTrabajador
+from apps.transacciones.models import TransaccionContrato
 from .serializers import ProcesarPlanillaSerializer
 
 class ProcesarPlanillaView(APIView):
@@ -466,14 +522,14 @@ class ProcesarPlanillaView(APIView):
             # Filtrar contratos activos (situacion = 'HAB')
             contratos = Contrato.objects.filter(situacion__codigo='HAB')
             for contrato in contratos:
-                total_haberes = TransaccionTrabajador.objects.filter(
+                total_haberes = TransaccionContrato.objects.filter(
                     contrato=contrato,
                     transaccion__tipo='HABER',
                     periodo_inicial__lte=periodo,
                     periodo_final__gte=periodo
                 ).aggregate(total=models.Sum('monto'))['total'] or 0
 
-                total_descuentos = TransaccionTrabajador.objects.filter(
+                total_descuentos = TransaccionContrato.objects.filter(
                     contrato=contrato,
                     transaccion__tipo='DESCUENTO',
                     periodo_inicial__lte=periodo,
@@ -530,7 +586,7 @@ from django.db import models
 # apps/reportes/serializers.py
 from rest_framework import serializers
 from apps.trabajadores.models import Trabajador
-from apps.transacciones.models import TransaccionTrabajador
+from apps.transacciones.models import TransaccionContrato
 from apps.planillas.models import PlanillaBeneficiario
 
 class TransaccionTrabajadorSerializer(serializers.ModelSerializer):
@@ -538,7 +594,7 @@ class TransaccionTrabajadorSerializer(serializers.ModelSerializer):
     descripcion = serializers.CharField(source='transaccion.descripcion')
 
     class Meta:
-        model = TransaccionTrabajador
+        model = TransaccionContrato
         fields = ['codigo', 'descripcion', 'monto']
         ref_name = 'TransaccionTrabajadorSerializerReportes'
 
@@ -779,6 +835,7 @@ class Periodo(models.Model):
     periodo = models.CharField(max_length=6, unique=True, blank=True, verbose_name='Periodo', editable=False)
     es_adicional = models.BooleanField(default=False, verbose_name='¿Es adicional?')
     periodo_actual = models.CharField(max_length=6, blank=True, verbose_name='Periodo Actual', editable=False, null=True, default=None)
+    estado = models.BooleanField(default=True, verbose_name='Activo')
     created = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)
 
@@ -1054,13 +1111,33 @@ class ConceptoRemunerativo(models.Model):
 class TipoDeCuenta(models.Model):
     pass
 
+
+class ComisionAfp(models.Model):
+    periodo = models.ForeignKey(Periodo, on_delete=models.CASCADE, verbose_name='Periodo')
+    afp = models.ForeignKey(Afp, on_delete=models.CASCADE, verbose_name='AFP')
+    comision_flujo = models.DecimalField(max_digits=8, decimal_places=2, verbose_name='Comisión por Flujo')
+    comision_mixta = models.DecimalField(max_digits=8, decimal_places=2, verbose_name='Comisión Mixta')
+    prima_seguro = models.DecimalField(max_digits=8, decimal_places=2, verbose_name='Prima de Seguro')
+    aporte_obligatorio = models.DecimalField(max_digits=8, decimal_places=2, verbose_name='Aporte Obligatorio')
+    total_comision = models.DecimalField(max_digits=8, decimal_places=2, verbose_name='Total Comisión')
+    created = models.DateTimeField(auto_now_add=True)
+    updated = models.DateTimeField(auto_now=True)
+    
+    def __str__(self):
+        return self.afp.nombre_afp + ' - ' + self.periodo.periodo + ' - ' + str(self.total_comision)
+
+    class Meta:
+        db_table = 'comision_afp'
+        ordering = ['periodo']
+        verbose_name = 'Comisión AFP'
+        verbose_name_plural = 'Comisiones AFP'
 ```
 
 **Ruta: /Volumes/Datos/Trabajo/Sistemas/Planilla/backend/planillas/apps/configuracion/serializers.py**
 ```Python
 # apps/configuracion/serializers.py
 from rest_framework import serializers
-from .models import Ugel, TipoPlanilla, ClasePlanilla, FuenteFinanciamiento, Periodo, Transaccion, Cargo, RegimenLaboral, TipoServidor, RegimenPensionario, Afp, Banco, Situacion, TipoDocumento, Sexo, TipoDescuento, TipoBeneficiario, EstadoCivil
+from .models import Ugel, TipoPlanilla, ClasePlanilla, FuenteFinanciamiento, Periodo, Transaccion, Cargo, RegimenLaboral, TipoServidor, RegimenPensionario, Afp, Banco, Situacion, TipoDocumento, Sexo, TipoDescuento, TipoBeneficiario, EstadoCivil, ComisionAfp
 
 class UgelSerializer(serializers.ModelSerializer):
     class Meta:
@@ -1154,6 +1231,11 @@ class TipoBeneficiarioSerializer(serializers.ModelSerializer):
 class EstadoCivilSerializer(serializers.ModelSerializer):
     class Meta:
         model = EstadoCivil
+        fields = '__all__'
+
+class ComisionAfpSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ComisionAfp
         fields = '__all__'```
 
 **Ruta: /Volumes/Datos/Trabajo/Sistemas/Planilla/backend/planillas/apps/configuracion/__init__.py**
@@ -1173,8 +1255,8 @@ class ConfiguracionConfig(AppConfig):
 **Ruta: /Volumes/Datos/Trabajo/Sistemas/Planilla/backend/planillas/apps/configuracion/admin.py**
 ```Python
 from django.contrib import admin
-from .models import Ugel, TipoPlanilla, ClasePlanilla, FuenteFinanciamiento, Periodo, Transaccion, Cargo, RegimenLaboral, TipoServidor, RegimenPensionario, Afp, Banco, Situacion, TipoDocumento, Sexo, EstadoCivil
-from apps.transacciones.models import TransaccionTrabajador
+from .models import Ugel, TipoPlanilla, ClasePlanilla, FuenteFinanciamiento, Periodo, Transaccion, Cargo, RegimenLaboral, TipoServidor, RegimenPensionario, Afp, Banco, Situacion, TipoDocumento, Sexo, EstadoCivil, ComisionAfp
+from apps.transacciones.models import TransaccionContrato
 
 # Register your models here.
 @admin.register(Ugel)
@@ -1214,7 +1296,7 @@ class FuenteFinanciamientoAdmin(admin.ModelAdmin):
 
 
 class TransaccionTrabajadorInline(admin.TabularInline):
-    model = TransaccionTrabajador
+    model = TransaccionContrato
     extra = 1  # Número de formularios adicionales vacíos que se mostrarán
 
 @admin.register(Transaccion)
@@ -1283,7 +1365,14 @@ class SexoAdmin(admin.ModelAdmin):
 class EstadoCivilAdmin(admin.ModelAdmin):
     list_display = ('nombre_estado_civil', 'codigo_estado_civil')
     search_fields = ('nombre_estado_civil', 'codigo_estado_civil')
-    ordering = ('nombre_estado_civil',)```
+    ordering = ('nombre_estado_civil',)
+
+@admin.register(ComisionAfp)
+class ComisionAfpAdmin(admin.ModelAdmin):
+    list_display = ('periodo', 'afp', 'total_comision' )
+    search_fields = ('periodo', 'afp')
+    list_filter = ('afp',)
+    ordering = ('periodo', 'afp')```
 
 **Ruta: /Volumes/Datos/Trabajo/Sistemas/Planilla/backend/planillas/apps/configuracion/tests.py**
 ```Python
@@ -1296,7 +1385,7 @@ from django.test import TestCase
 ```Python
 # apps/configuracion/urls.py
 from rest_framework.routers import DefaultRouter
-from .views import UgelViewSet, TipoPlanillaViewSet, ClasePlanillaViewSet, FuenteFinanciamientoViewSet, PeriodoViewSet, TransaccionViewSet, CargoViewSet, RegimenLaboralViewSet, TipoServidorViewSet, RegimenPensionarioViewSet, AFPViewSet, BancoViewSet, SituacionViewSet, TipoDocumentoViewSet, SexoViewSet, TipoDescuentoViewSet, TipoBeneficiarioViewSet, EstadoCivilViewSet
+from .views import UgelViewSet, TipoPlanillaViewSet, ClasePlanillaViewSet, FuenteFinanciamientoViewSet, PeriodoViewSet, TransaccionViewSet, CargoViewSet, RegimenLaboralViewSet, TipoServidorViewSet, RegimenPensionarioViewSet, AFPViewSet, BancoViewSet, SituacionViewSet, TipoDocumentoViewSet, SexoViewSet, TipoDescuentoViewSet, TipoBeneficiarioViewSet, EstadoCivilViewSet, ComisionAfpViewSet
 
 router = DefaultRouter()
 router.register(r'ugels', UgelViewSet)
@@ -1317,7 +1406,7 @@ router.register(r'sexos', SexoViewSet)
 router.register(r'estados-civiles', EstadoCivilViewSet)
 router.register(r'tipos-descuento', TipoDescuentoViewSet)
 router.register(r'tipos-beneficiario', TipoBeneficiarioViewSet)
-
+router.register(r'comisiones-afp', ComisionAfpViewSet)
 
 urlpatterns = router.urls
 ```
@@ -1326,8 +1415,8 @@ urlpatterns = router.urls
 ```Python
 from django.shortcuts import render
 from rest_framework import viewsets
-from .models import Ugel, TipoPlanilla, ClasePlanilla, FuenteFinanciamiento, Periodo, Transaccion, Cargo, RegimenLaboral, TipoServidor, RegimenPensionario, Afp, Banco, Situacion, TipoDocumento, Sexo, TipoDescuento, TipoBeneficiario, EstadoCivil
-from .serializers import UgelSerializer, TipoPlanillaSerializer, ClasePlanillaSerializer, FuenteFinanciamientoSerializer, PeriodoSerializer, TransaccionSerializer, CargoSerializer, RegimenLaboralSerializer, TipoServidorSerializer, RegimenPensionarioSerializer, AFPSerializer, BancoSerializer, SituacionSerializer, TipoDocumentoSerializer, SexoSerializer, TipoDescuentoSerializer, TipoBeneficiarioSerializer, EstadoCivilSerializer
+from .models import Ugel, TipoPlanilla, ClasePlanilla, FuenteFinanciamiento, Periodo, Transaccion, Cargo, RegimenLaboral, TipoServidor, RegimenPensionario, Afp, Banco, Situacion, TipoDocumento, Sexo, TipoDescuento, TipoBeneficiario, EstadoCivil, ComisionAfp
+from .serializers import UgelSerializer, TipoPlanillaSerializer, ClasePlanillaSerializer, FuenteFinanciamientoSerializer, PeriodoSerializer, TransaccionSerializer, CargoSerializer, RegimenLaboralSerializer, TipoServidorSerializer, RegimenPensionarioSerializer, AFPSerializer, BancoSerializer, SituacionSerializer, TipoDocumentoSerializer, SexoSerializer, TipoDescuentoSerializer, TipoBeneficiarioSerializer, EstadoCivilSerializer, ComisionAfpSerializer
 from rest_framework.permissions import IsAuthenticated
 
 # Create your views here.
@@ -1419,6 +1508,11 @@ class TipoBeneficiarioViewSet(viewsets.ModelViewSet):
 class EstadoCivilViewSet(viewsets.ModelViewSet):
     queryset = EstadoCivil.objects.all()
     serializer_class = EstadoCivilSerializer
+    permission_classes = [IsAuthenticated]
+
+class ComisionAfpViewSet(viewsets.ModelViewSet):
+    queryset = ComisionAfp.objects.all()
+    serializer_class = ComisionAfpSerializer
     permission_classes = [IsAuthenticated]```
 
 **Ruta: /Volumes/Datos/Trabajo/Sistemas/Planilla/backend/planillas/apps/usuarios/models.py**
@@ -1717,6 +1811,7 @@ from apps.usuarios.models import Persona
 class Trabajador(models.Model):
     ugel = models.ForeignKey('configuracion.Ugel', on_delete=models.CASCADE, verbose_name='UGEL')
     persona = models.OneToOneField(Persona, on_delete=models.CASCADE, verbose_name='Persona', related_name='empleados')
+    #persona = models.ForeignKey(Persona, on_delete=models.CASCADE, verbose_name='Persona', related_name='empleados')
     tiempo_servicios = models.IntegerField(null=True, blank=True, verbose_name='Tiempo de Servicios')
     regimen_pensionario = models.ForeignKey('configuracion.RegimenPensionario', on_delete=models.CASCADE, verbose_name='Régimen Pensionario')
     afp = models.ForeignKey('configuracion.Afp', on_delete=models.CASCADE, verbose_name='AFP')
@@ -1777,9 +1872,10 @@ from .models import Trabajador
 @admin.register(Trabajador)
 class TrabajadorAdmin(admin.ModelAdmin):
     list_display = ('persona', 'estado')
-    search_fields = ('persona__nombres', 'persona__apellido_paterno', 'persona__materno', 'cargo__nombre_cargo')
+    search_fields = ('persona__nombres', 'persona__apellido_paterno', 'persona__apellido_materno')
     list_filter = ('estado',)
     ordering = ('persona__apellido_paterno', 'persona__apellido_materno', 'persona__nombres')
+    autocomplete_fields = ['persona']
 ```
 
 **Ruta: /Volumes/Datos/Trabajo/Sistemas/Planilla/backend/planillas/apps/trabajadores/tests.py**
@@ -1830,7 +1926,7 @@ from django.db import models
 from django.db.models import Max
 from apps.planillas.models import Contrato
 from apps.configuracion.models import Transaccion
-class TransaccionTrabajador(models.Model):
+class TransaccionContrato(models.Model):
     contrato = models.ForeignKey(Contrato, on_delete=models.CASCADE, verbose_name='Contrato', related_name='transacciones')
     transaccion = models.ForeignKey(Transaccion, on_delete=models.CASCADE, verbose_name='Transacción')
     monto = models.DecimalField(max_digits=8, decimal_places=2, null=True, blank=True, verbose_name='Monto')
@@ -1850,7 +1946,7 @@ class TransaccionTrabajador(models.Model):
 
     def save(self, *args, **kwargs):
         if not self.pk:
-            ultimo_correlativo = TransaccionTrabajador.objects.filter(transaccion=self.transaccion).aggregate(Max('correlativo'))['correlativo__max']
+            ultimo_correlativo = TransaccionContrato.objects.filter(transaccion=self.transaccion).aggregate(Max('correlativo'))['correlativo__max']
             self.correlativo = (ultimo_correlativo or 0) + 1
         super().save(*args, **kwargs)
 ```
@@ -1859,11 +1955,11 @@ class TransaccionTrabajador(models.Model):
 ```Python
 # apps/transacciones/serializers.py
 from rest_framework import serializers
-from .models import TransaccionTrabajador
+from .models import TransaccionContrato
 
 class TransaccionTrabajadorSerializer(serializers.ModelSerializer):
     class Meta:
-        model = TransaccionTrabajador
+        model = TransaccionContrato
         fields = '__all__'
         ref_name = 'TransaccionTrabajadorSerializerTransacciones'
 ```
@@ -1886,20 +1982,21 @@ class TransaccionesConfig(AppConfig):
 ```Python
 # apps/transacciones/admin.py
 from django.contrib import admin
-from .models import TransaccionTrabajador
+from .models import TransaccionContrato
 
-@admin.register(TransaccionTrabajador)
+@admin.register(TransaccionContrato)
 class TransaccionTrabajadorAdmin(admin.ModelAdmin):
-    list_display = ('contrato', 'transaccion', 'monto', 'periodo_inicial', 'periodo_final', 'estado')
+    list_display = ('contrato', 'transaccion', 'monto', 'periodo_inicial', 'periodo_final', 'correlativo','estado')
     search_fields = (
         'contrato__trabajador__persona__nombres',
         'contrato__trabajador__persona__apellido_paterno',
         'contrato__trabajador__persona__apellido_materno',
-        'transaccion__descripcion'
+        'transaccion__descripcion_transaccion'
     )
     list_filter = ('estado', 'transaccion__tipo_transaccion')
     ordering = ('transaccion', 'correlativo')
-    autocomplete_fields = ['contrato', 'transaccion']```
+    autocomplete_fields = ['contrato', 'transaccion']
+```
 
 **Ruta: /Volumes/Datos/Trabajo/Sistemas/Planilla/backend/planillas/apps/transacciones/tests.py**
 ```Python
@@ -1925,11 +2022,11 @@ urlpatterns = router.urls
 # apps/transacciones/views.py
 from rest_framework import viewsets
 from rest_framework.permissions import IsAuthenticated
-from .models import TransaccionTrabajador
+from .models import TransaccionContrato
 from .serializers import TransaccionTrabajadorSerializer
 
 class TransaccionTrabajadorViewSet(viewsets.ModelViewSet):
-    queryset = TransaccionTrabajador.objects.all()
+    queryset = TransaccionContrato.objects.all()
     serializer_class = TransaccionTrabajadorSerializer
     permission_classes = [IsAuthenticated]
 ```
@@ -1958,6 +2055,7 @@ class Contrato(models.Model):
     tipo_servidor = models.ForeignKey(TipoServidor, on_delete=models.CASCADE, verbose_name='Tipo de Servidor')
     clase_planilla = models.ForeignKey(ClasePlanilla, on_delete=models.CASCADE, verbose_name='Clase de Planilla')
     fuente_financiamiento = models.ForeignKey(FuenteFinanciamiento, on_delete=models.CASCADE, verbose_name='Fuente de Financiamiento')
+    sueldo = models.DecimalField(max_digits=8, decimal_places=2, null=True, blank=True, verbose_name='Sueldo')
     dias_laborados = models.IntegerField(null=True, blank=True, verbose_name='Días Laborados', default=30)
     leyenda_permanente = models.CharField(max_length=255, blank=True, verbose_name='Leyenda Permanente')
     jornada_laboral = models.IntegerField(null=True, blank=True, verbose_name='Jornada Laboral', default=48)
@@ -1974,6 +2072,77 @@ class Contrato(models.Model):
         ordering = ['id']
         verbose_name = 'Contrato'
         verbose_name_plural = 'Contratos'
+
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+        self.registrar_transacciones()
+
+
+    def registrar_transacciones(self):
+        from django.db import transaction
+        from apps.configuracion.models import Transaccion, ComisionAfp
+        from django.db.models import Q
+        from decimal import Decimal
+        if self.clase_planilla.codigo_clase_planilla != '03':  # Si no es CAS, salir
+            return
+
+        try:
+            periodo_actual = Periodo.objects.get(estado=True).periodo
+        except Periodo.DoesNotExist:
+            raise ValueError("No hay un periodo activo para procesar las planillas.")
+
+        sueldo_proporcional = (self.sueldo * Decimal(self.dias_laborados)) / Decimal('30')
+
+        transacciones = {
+            'remuneracion': Transaccion.objects.get(id=1),  # Remuneracion CAS
+            'onp': Transaccion.objects.get(id=6),  # DL 19990 - ONP
+            'afp': Transaccion.objects.get(id=3),  # Ley 25897 - AFP
+        }
+
+        with transaction.atomic():
+            # Registrar transacción de remuneración
+            self.registrar_transaccion(transacciones['remuneracion'], sueldo_proporcional, periodo_actual)
+
+            # Registrar descuento según régimen pensionario
+            regimen_pensionario = self.trabajador.regimen_pensionario.codigo_regimen_pensionario
+
+            if regimen_pensionario == '02':  # ONP
+                monto_descuento = sueldo_proporcional * Decimal('0.13')
+                self.registrar_transaccion(transacciones['onp'], monto_descuento, periodo_actual)
+            elif regimen_pensionario == '03':  # AFP
+                try:
+                    comision_afp = ComisionAfp.objects.get(
+                        Q(afp=self.trabajador.afp) & Q(periodo__periodo=periodo_actual)
+                    )
+                    print(periodo_actual)
+                    monto_descuento = sueldo_proporcional * (comision_afp.total_comision / Decimal('100'))
+                    self.registrar_transaccion(transacciones['afp'], monto_descuento, periodo_actual)
+                except ComisionAfp.DoesNotExist:
+                    print(f"No se encontró comisión AFP para {self.trabajador.afp} en el periodo {periodo_actual}")
+                    # Aquí podrías lanzar una excepción o manejar el error de otra manera
+
+    def registrar_transaccion(self, transaccion, monto, periodo):
+        from apps.transacciones.models import TransaccionContrato
+        
+        existe_transaccion = TransaccionContrato.objects.filter(
+            contrato=self,
+            transaccion=transaccion,
+            estado=True,
+            periodo_inicial__lte=periodo,
+            periodo_final__gte=periodo
+        ).exists()
+
+        if not existe_transaccion:
+            TransaccionContrato.objects.create(
+                contrato=self,
+                transaccion=transaccion,
+                monto=monto,
+                periodo_inicial=periodo,
+                periodo_final=periodo,
+                estado=True
+            )
+
+
 
 class Planilla(models.Model):
     ESTADO_CHOICES = [
@@ -2014,6 +2183,35 @@ class Boleta(models.Model):
     created = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)
 
+    # Datos del contrato en el momento de la generación de la boleta
+    centro_de_trabajo = models.CharField(max_length=255, blank=True, verbose_name='Centro de Trabajo')
+    cargo = models.CharField(max_length=255, blank=True, verbose_name='Cargo')
+    fecha_ingreso = models.DateField(null=True, blank=True, verbose_name='Fecha de Ingreso')
+    fecha_cese = models.DateField(null=True, blank=True, verbose_name='Fecha de Cese')
+    clase_planilla = models.CharField(max_length=255, blank=True, verbose_name='Clase de Planilla')
+    fuente_financiamiento = models.CharField(max_length=255, blank=True, verbose_name='Fuente de Financiamiento')
+    sueldo = models.DecimalField(max_digits=8, decimal_places=2, null=True, blank=True, verbose_name='Sueldo')
+    dias_laborados = models.IntegerField(null=True, blank=True, verbose_name='Días Laborados', default=30)
+    leyenda_permanente = models.CharField(max_length=255, blank=True, verbose_name='Leyenda Permanente')
+    jornada_laboral = models.IntegerField(null=True, blank=True, verbose_name='Jornada Laboral', default=48)
+
+    # Datos del trabajador en el momento de la generación de la boleta
+    trabajador_nombres = models.CharField(max_length=255, verbose_name='Nombres del Trabajador')
+    trabajador_apellidos = models.CharField(max_length=255, verbose_name='Apellidos del Trabajador')
+    trabajador_dni = models.CharField(max_length=20, verbose_name='DNI del Trabajador')
+    regimen_laboral = models.CharField(max_length=255, blank=True, verbose_name='Régimen Laboral')
+    tipo_servidor = models.CharField(max_length=255, blank=True, verbose_name='Tipo de Servidor')
+    regimen_pensionario = models.CharField(max_length=255, blank=True, verbose_name='Régimen Pensionario')
+    banco = models.CharField(max_length=255, blank=True, verbose_name='Banco')
+    cuenta_bancaria = models.CharField(max_length=255, blank=True, verbose_name='Cuenta Bancaria')
+
+    # Totales calculados
+    total_haberes = models.DecimalField(max_digits=12, decimal_places=2, default=0, verbose_name='Total Haberes', editable=False)
+    total_descuentos = models.DecimalField(max_digits=12, decimal_places=2, default=0, verbose_name='Total Descuentos', editable=False)
+    total_aportes = models.DecimalField(max_digits=12, decimal_places=2, default=0, verbose_name='Total Aportes', editable=False)
+    neto_a_pagar = models.DecimalField(max_digits=12, decimal_places=2, default=0, verbose_name='Neto a Pagar', editable=False)
+
+
     def calcular_totales(self):
         transacciones = self.contrato.transacciones.filter(
             periodo_inicial__lte=self.planilla.periodo,
@@ -2035,11 +2233,27 @@ class Boleta(models.Model):
             # Si no hay boletas en el período, comenzar con '001'
             self.numero_boleta = '001'
 
+    def registrar_transacciones_boleta(self):
+        transacciones = self.contrato.transacciones.filter(
+            periodo_inicial__lte=self.planilla.periodo,
+            periodo_final__gte=self.planilla.periodo,
+            estado=True
+        )
+        for transaccion in transacciones:
+            BoletaTransaccion.objects.create(
+                boleta=self,
+                tipo=transaccion.transaccion.tipo_transaccion,
+                codigo=transaccion.transaccion.codigo_transaccion_mcpp,
+                descripcion=transaccion.transaccion.descripcion_transaccion,
+                monto=transaccion.monto
+            )
+
     def save(self, *args, **kwargs):
         if not self.numero_boleta:
             self.generar_numero_boleta()
         self.calcular_totales()
         super().save(*args, **kwargs)
+        self.registrar_transacciones_boleta()
         self.actualizar_totales_planilla()
 
     def actualizar_totales_planilla(self):
@@ -2068,6 +2282,19 @@ class Boleta(models.Model):
         verbose_name = 'Boleta'
         verbose_name_plural = 'Boletas'
 
+class BoletaTransaccion(models.Model):
+    boleta = models.ForeignKey(Boleta, on_delete=models.CASCADE, related_name='transacciones')
+    tipo = models.CharField(max_length=50, verbose_name='Tipo de Transacción')
+    codigo = models.CharField(max_length=50, verbose_name='Código de Transacción')
+    descripcion = models.CharField(max_length=255, verbose_name='Descripción de Transacción')
+    monto = models.DecimalField(max_digits=12, decimal_places=2, verbose_name='Monto')
+
+    class Meta:
+        db_table = 'boleta_transacciones'
+        verbose_name = 'Boleta Transacción'
+        verbose_name_plural = 'Boleta Transacciones'
+
+
 class PlanillaBeneficiario(models.Model):
     beneficiario = models.ForeignKey(Beneficiario, on_delete=models.CASCADE, verbose_name='Beneficiario')
     periodo = models.ForeignKey(Periodo, on_delete=models.CASCADE, verbose_name='Período')
@@ -2090,11 +2317,11 @@ class PlanillaBeneficiario(models.Model):
 # apps/planillas/serializers.py
 from rest_framework import serializers
 from .models import Periodo, PlanillaBeneficiario, Contrato, Planilla, Boleta
-from apps.transacciones.models import TransaccionTrabajador
+from apps.transacciones.models import TransaccionContrato
 
 class TransaccionTrabajadorSerializer(serializers.ModelSerializer):
     class Meta:
-        model = TransaccionTrabajador
+        model = TransaccionContrato
         fields = '__all__'
         extra_kwargs = {
             'contrato': {'required': False, 'allow_null': True},
@@ -2122,7 +2349,7 @@ class ContratoSerializer(serializers.ModelSerializer):
         contrato = Contrato.objects.create(**validated_data)
         for transaccion_data in transacciones_data:
             if transaccion_data:  # Verificar que transaccion_data no esté vacío
-                TransaccionTrabajador.objects.create(contrato=contrato, **transaccion_data)
+                TransaccionContrato.objects.create(contrato=contrato, **transaccion_data)
         return contrato
 
     def update(self, instance, validated_data):
@@ -2133,7 +2360,7 @@ class ContratoSerializer(serializers.ModelSerializer):
             instance.transacciones.all().delete()  # Elimina las transacciones existentes
             for transaccion_data in transacciones_data:
                 if transaccion_data:  # Verificar que transaccion_data no esté vacío
-                    TransaccionTrabajador.objects.create(contrato=instance, **transaccion_data)
+                    TransaccionContrato.objects.create(contrato=instance, **transaccion_data)
 
         return instance
 
@@ -2206,10 +2433,10 @@ class PlanillaBeneficiarioAdmin(admin.ModelAdmin):
 @admin.register(Contrato)
 class ContratoAdmin(admin.ModelAdmin):
     list_display = ('trabajador', 'fuente_financiamiento', 'cargo', 'fecha_ingreso', 'fecha_cese', 'situacion')
-    #search_fields = ('trabajador__persona__nombres', 'trabajador__persona__paterno', 'trabajador__persona__materno', 'cargo__nombre_cargo')
-    search_fields = ['nombre_completo_trabajador', 'trabajador__persona__numero_documento']
+    search_fields = ('trabajador__persona__nombres', 'trabajador__persona__apellido_paterno', 'trabajador__persona__apellido_materno', 'cargo__nombre_cargo')
     list_filter = ('situacion', 'cargo', 'fecha_ingreso', 'fecha_cese')
     ordering = ('trabajador', 'fecha_ingreso')
+    autocomplete_fields = ['trabajador', 'cargo', 'clase_planilla', 'fuente_financiamiento']
     inlines = [TransaccionTrabajadorInline]
 
 
@@ -2281,7 +2508,7 @@ from rest_framework import viewsets
 from rest_framework.permissions import IsAuthenticated
 from .models import PlanillaBeneficiario, Contrato, Planilla, Boleta
 from .serializers import PlanillaBeneficiarioSerializer, ContratoSerializer, PlanillaSerializer, BoletaSerializer
-from apps.transacciones.models import TransaccionTrabajador
+from apps.transacciones.models import TransaccionContrato
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
@@ -2309,7 +2536,7 @@ class ProcesarPlanillaView(APIView):
         if not periodo:
             return Response({"error": "Debe especificar un período."}, status=status.HTTP_400_BAD_REQUEST)
 
-        transacciones = TransaccionTrabajador.objects.filter(
+        transacciones = TransaccionContrato.objects.filter(
             periodo_inicial__lte=periodo,
             periodo_final__gte=periodo
         )

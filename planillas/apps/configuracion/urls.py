@@ -1,6 +1,6 @@
 # apps/configuracion/urls.py
 from rest_framework.routers import DefaultRouter
-from .views import UgelViewSet, TipoPlanillaViewSet, ClasePlanillaViewSet, FuenteFinanciamientoViewSet, PeriodoViewSet, TransaccionViewSet, CargoViewSet, RegimenLaboralViewSet, TipoServidorViewSet, RegimenPensionarioViewSet, AFPViewSet, BancoViewSet, SituacionViewSet, TipoDocumentoViewSet, SexoViewSet, TipoDescuentoViewSet, TipoBeneficiarioViewSet, EstadoCivilViewSet
+from .views import UgelViewSet, TipoPlanillaViewSet, ClasePlanillaViewSet, FuenteFinanciamientoViewSet, PeriodoViewSet, TransaccionViewSet, CargoViewSet, RegimenLaboralViewSet, TipoServidorViewSet, RegimenPensionarioViewSet, AFPViewSet, BancoViewSet, SituacionViewSet, TipoDocumentoViewSet, SexoViewSet, TipoDescuentoViewSet, TipoBeneficiarioViewSet, EstadoCivilViewSet, ComisionAfpViewSet
 
 router = DefaultRouter()
 router.register(r'ugels', UgelViewSet)
@@ -21,6 +21,6 @@ router.register(r'sexos', SexoViewSet)
 router.register(r'estados-civiles', EstadoCivilViewSet)
 router.register(r'tipos-descuento', TipoDescuentoViewSet)
 router.register(r'tipos-beneficiario', TipoBeneficiarioViewSet)
-
+router.register(r'comisiones-afp', ComisionAfpViewSet)
 
 urlpatterns = router.urls

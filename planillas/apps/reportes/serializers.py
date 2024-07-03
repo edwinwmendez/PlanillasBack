@@ -1,7 +1,7 @@
 # apps/reportes/serializers.py
 from rest_framework import serializers
 from apps.trabajadores.models import Trabajador
-from apps.transacciones.models import TransaccionTrabajador
+from apps.transacciones.models import TransaccionContrato
 from apps.planillas.models import PlanillaBeneficiario
 
 class TransaccionTrabajadorSerializer(serializers.ModelSerializer):
@@ -9,7 +9,7 @@ class TransaccionTrabajadorSerializer(serializers.ModelSerializer):
     descripcion = serializers.CharField(source='transaccion.descripcion')
 
     class Meta:
-        model = TransaccionTrabajador
+        model = TransaccionContrato
         fields = ['codigo', 'descripcion', 'monto']
         ref_name = 'TransaccionTrabajadorSerializerReportes'
 

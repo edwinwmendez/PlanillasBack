@@ -1,6 +1,6 @@
 from django.contrib import admin
-from .models import Ugel, TipoPlanilla, ClasePlanilla, FuenteFinanciamiento, Periodo, Transaccion, Cargo, RegimenLaboral, TipoServidor, RegimenPensionario, Afp, Banco, Situacion, TipoDocumento, Sexo, EstadoCivil
-from apps.transacciones.models import TransaccionTrabajador
+from .models import Ugel, TipoPlanilla, ClasePlanilla, FuenteFinanciamiento, Periodo, Transaccion, Cargo, RegimenLaboral, TipoServidor, RegimenPensionario, Afp, Banco, Situacion, TipoDocumento, Sexo, EstadoCivil, ComisionAfp
+from apps.transacciones.models import TransaccionContrato
 
 # Register your models here.
 @admin.register(Ugel)
@@ -40,7 +40,7 @@ class FuenteFinanciamientoAdmin(admin.ModelAdmin):
 
 
 class TransaccionTrabajadorInline(admin.TabularInline):
-    model = TransaccionTrabajador
+    model = TransaccionContrato
     extra = 1  # Número de formularios adicionales vacíos que se mostrarán
 
 @admin.register(Transaccion)
@@ -110,3 +110,10 @@ class EstadoCivilAdmin(admin.ModelAdmin):
     list_display = ('nombre_estado_civil', 'codigo_estado_civil')
     search_fields = ('nombre_estado_civil', 'codigo_estado_civil')
     ordering = ('nombre_estado_civil',)
+
+@admin.register(ComisionAfp)
+class ComisionAfpAdmin(admin.ModelAdmin):
+    list_display = ('periodo', 'afp', 'total_comision' )
+    search_fields = ('periodo', 'afp')
+    list_filter = ('afp',)
+    ordering = ('periodo', 'afp')

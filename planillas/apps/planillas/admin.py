@@ -1,6 +1,6 @@
 # apps/planillas/admin.py
 from django.contrib import admin
-from .models import  PlanillaBeneficiario, Contrato, Planilla, Boleta
+from .models import  PlanillaBeneficiario, Contrato, Planilla, Boleta, BoletaTransaccion
 from apps.configuracion.admin import TransaccionTrabajadorInline
 
 @admin.register(PlanillaBeneficiario)
@@ -34,18 +34,25 @@ class BoletaAdmin(admin.ModelAdmin):
 
 
 
-from apps.procesos.utils import generar_boletas_para_planilla
+from apps.procesos.services import ProcesoPlanilla
 
 @admin.action(description='Generar boletas para esta planilla')
 def generar_boletas(modeladmin, request, queryset):
     for planilla in queryset:
-        generar_boletas_para_planilla(planilla.id)
+        ProcesoPlanilla.generar_boletas_pago(planilla.id)
     modeladmin.message_user(request, "Boletas generadas exitosamente.")
+
+@admin.action(description='Calcular planilla de remuneraciones')
+def calcular_planilla_remuneraciones(modeladmin, request, queryset):
+    for planilla in queryset:
+        ProcesoPlanilla.calcular_planilla_remuneraciones(planilla.id)
+    modeladmin.message_user(request, "Planillas de remuneraciones calculadas exitosamente.")
+
 
 @admin.register(Planilla)
 class PlanillaAdmin(admin.ModelAdmin):
     list_display = ('correlativo', 'clase_planilla', 'fuente_financiamiento', 'periodo', 'total_haberes', 'total_descuentos', 'total_aportes', 'estado')
-    actions = [generar_boletas]
+    actions = [generar_boletas, calcular_planilla_remuneraciones]
     search_fields = ('correlativo', 'clase_planilla__nombre', 'fuente_financiamiento__nombre')
     list_filter = ('estado', 'periodo', 'clase_planilla', 'fuente_financiamiento')
     ordering = ('correlativo', 'periodo')
@@ -54,4 +61,3 @@ class PlanillaAdmin(admin.ModelAdmin):
         queryset = super().get_queryset(request)
         queryset = queryset.select_related('clase_planilla', 'fuente_financiamiento', 'periodo')
         return queryset
-

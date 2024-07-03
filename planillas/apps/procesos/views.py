@@ -1,56 +1,32 @@
 # apps/procesos/views.py
-from django.db import models
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
-from apps.configuracion.models import Periodo, TipoPlanilla
-from apps.trabajadores.models import Trabajador
-from apps.planillas.models import Contrato
-from apps.transacciones.models import TransaccionTrabajador
-from .serializers import ProcesarPlanillaSerializer
+from .services import ProcesoPlanilla
 
-class ProcesarPlanillaView(APIView):
-    def post(self, request, *args, **kwargs):
-        serializer = ProcesarPlanillaSerializer(data=request.data)
-        if serializer.is_valid():
-            periodo = serializer.validated_data['periodo']
-            tipo_planilla_id = serializer.validated_data['tipo_planilla']
+class CerrarAperturarPeriodoView(APIView):
+    def post(self, request):
+        try:
+            ProcesoPlanilla.cerrar_aperturar_periodo()
+            return Response({"message": "Periodo cerrado y nuevo periodo aperturado con éxito."}, status=status.HTTP_200_OK)
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
-            try:
-                periodo_obj = Periodo.objects.get(periodo=periodo)
-                tipo_planilla_obj = TipoPlanilla.objects.get(id=tipo_planilla_id)
-            except (Periodo.DoesNotExist, TipoPlanilla.DoesNotExist) as e:
-                return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+class CalcularPlanillaRemuneracionesView(APIView):
+    def post(self, request):
+        try:
+            ProcesoPlanilla.calcular_planilla_remuneraciones()
+            return Response({"message": "Planilla de remuneraciones calculada con éxito."}, status=status.HTTP_200_OK)
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
-            # Filtrar contratos activos (situacion = 'HAB')
-            contratos = Contrato.objects.filter(situacion__codigo='HAB')
-            for contrato in contratos:
-                total_haberes = TransaccionTrabajador.objects.filter(
-                    contrato=contrato,
-                    transaccion__tipo='HABER',
-                    periodo_inicial__lte=periodo,
-                    periodo_final__gte=periodo
-                ).aggregate(total=models.Sum('monto'))['total'] or 0
-
-                total_descuentos = TransaccionTrabajador.objects.filter(
-                    contrato=contrato,
-                    transaccion__tipo='DESCUENTO',
-                    periodo_inicial__lte=periodo,
-                    periodo_final__gte=periodo
-                ).aggregate(total=models.Sum('monto'))['total'] or 0
-
-                essalud = total_haberes * 0.09  # Ejemplo de cálculo de ESSALUD
-
-                Contrato.objects.create(
-                    total_haberes=total_haberes,
-                    total_descuentos=total_descuentos,
-                    essalud=essalud,
-                    emitio_boleta=0,
-                    contrato=contrato,
-                    tipo_planilla=tipo_planilla_obj,
-                    periodo=periodo_obj,
-                    ugel=contrato.trabajador.ugel
-                )
-
-            return Response({"message": "Planillas procesadas exitosamente"}, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+class GenerarBoletasPagoView(APIView):
+    def post(self, request):
+        planilla_id = request.data.get('planilla_id')
+        if not planilla_id:
+            return Response({"error": "Se requiere el ID de la planilla."}, status=status.HTTP_400_BAD_REQUEST)
+        try:
+            ProcesoPlanilla.generar_boletas_pago(planilla_id)
+            return Response({"message": "Boletas de pago generadas con éxito."}, status=status.HTTP_200_OK)
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)

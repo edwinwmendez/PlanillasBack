@@ -4,7 +4,7 @@ from django.db import models
 from django.db.models import Max
 from apps.planillas.models import Contrato
 from apps.configuracion.models import Transaccion
-class TransaccionTrabajador(models.Model):
+class TransaccionContrato(models.Model):
     contrato = models.ForeignKey(Contrato, on_delete=models.CASCADE, verbose_name='Contrato', related_name='transacciones')
     transaccion = models.ForeignKey(Transaccion, on_delete=models.CASCADE, verbose_name='Transacción')
     monto = models.DecimalField(max_digits=8, decimal_places=2, null=True, blank=True, verbose_name='Monto')
@@ -24,6 +24,6 @@ class TransaccionTrabajador(models.Model):
 
     def save(self, *args, **kwargs):
         if not self.pk:
-            ultimo_correlativo = TransaccionTrabajador.objects.filter(transaccion=self.transaccion).aggregate(Max('correlativo'))['correlativo__max']
+            ultimo_correlativo = TransaccionContrato.objects.filter(transaccion=self.transaccion).aggregate(Max('correlativo'))['correlativo__max']
             self.correlativo = (ultimo_correlativo or 0) + 1
         super().save(*args, **kwargs)
