@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Ugel, TipoPlanilla, ClasePlanilla, FuenteFinanciamiento, Periodo, Transaccion, Cargo, RegimenLaboral, TipoServidor, RegimenPensionario, Afp, Banco, Situacion, TipoDocumento, Sexo, EstadoCivil, ComisionAfp
+from .models import Ugel, TipoPlanilla, ClasePlanilla, FuenteFinanciamiento, Periodo, Transaccion, Cargo, RegimenLaboral, TipoServidor, RegimenPensionario, Afp, Banco, Situacion, TipoDocumento, Sexo, EstadoCivil, ComisionAfp, ConfiguracionGlobal, ValorConfiguracionGlobal
 from apps.transacciones.models import TransaccionContrato
 
 # Register your models here.
@@ -11,10 +11,10 @@ class UgelAdmin(admin.ModelAdmin):
 
 @admin.register(Periodo)
 class PeriodoAdmin(admin.ModelAdmin):
-    list_display = ('periodo', 'mes', 'anio', 'es_adicional', 'periodo_actual')
-    search_fields = ('mes', 'anio', 'periodo')
+    list_display = ('periodo', 'es_adicional', 'estado')
+    search_fields = ('periodo',)
     list_filter = ('es_adicional',)
-    ordering = ('anio', 'mes')
+    ordering = ('periodo', 'es_adicional')
 
 
 @admin.register(TipoPlanilla)
@@ -113,7 +113,20 @@ class EstadoCivilAdmin(admin.ModelAdmin):
 
 @admin.register(ComisionAfp)
 class ComisionAfpAdmin(admin.ModelAdmin):
-    list_display = ('periodo', 'afp', 'total_comision' )
+    list_display = ('periodo', 'afp', 'total_comision', 'estado')
     search_fields = ('periodo', 'afp')
-    list_filter = ('afp',)
+    list_filter = ('afp','estado')
     ordering = ('periodo', 'afp')
+
+@admin.register(ConfiguracionGlobal)
+class ConfiguracionGlobalAdmin(admin.ModelAdmin):
+    list_display = ('clave', 'descripcion')
+    search_fields = ('clave', 'descripcion')
+    ordering = ('clave',)
+
+@admin.register(ValorConfiguracionGlobal)
+class ValorConfiguracionGlobalAdmin(admin.ModelAdmin):
+    list_display = ('configuracion', 'valor', 'fecha_inicio', 'fecha_fin')
+    search_fields = ('configuracion', 'valor')
+    list_filter = ('configuracion',)
+    ordering = ('configuracion', 'fecha_inicio', 'fecha_fin')

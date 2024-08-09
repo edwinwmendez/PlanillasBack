@@ -13,7 +13,16 @@ class ReporteRemuneracionActivosViewSet(viewsets.ReadOnlyModelViewSet):
     def get_queryset(self):
         if getattr(self, 'swagger_fake_view', False):
             return Trabajador.objects.none()
-        return Trabajador.objects.filter(contratos__situacion__codigo='HAB').distinct()
+        
+        user = self.request.user
+        queryset = Trabajador.objects.filter(contratos__situacion__codigo='HAB')\
+            .select_related('persona', 'ugel', 'regimen_pensionario', 'afp')\
+            .prefetch_related('contratos', 'contratos__transacciones')
+        
+        if user.role != 'admin_sistema':
+            queryset = queryset.filter(ugel=user.ugel)
+        
+        return queryset.distinct()
 
 class ReportePlanillaBeneficiariosViewSet(viewsets.ReadOnlyModelViewSet):
     serializer_class = PlanillaBeneficiarioSerializer

@@ -1,6 +1,7 @@
 # apps/trabajadores/models.py
 from django.db import models
 from apps.usuarios.models import Persona
+from auditlog.registry import auditlog
 
 class Trabajador(models.Model):
     ugel = models.ForeignKey('configuracion.Ugel', on_delete=models.CASCADE, verbose_name='UGEL')
@@ -27,5 +28,9 @@ class Trabajador(models.Model):
         verbose_name = 'Trabajador'
         verbose_name_plural = 'Trabajadores'
         indexes = [
-            models.Index(fields=['persona'], name='persona_idx'),
+            models.Index(fields=['persona'], name='idx_trabajador_persona'),
+            models.Index(fields=['ugel'], name='idx_trabajador_ugel'),
+            models.Index(fields=['estado'], name='idx_trabajador_estado'),
         ]
+
+auditlog.register(Trabajador)

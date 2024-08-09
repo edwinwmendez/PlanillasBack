@@ -1,210 +1,270 @@
 # Estructura del Directorio y Contenido de Archivos
 
 ## Estructura del Directorio:
-│├── planillas/
-│    ├── generar_transacciones.py
-│    ├── estructura_de_proyecto1.md
-│    ├── Tablas Parametricas.xlsx
-│    ├── estructura_de_proyecto.md
-│    └── manage.py
-│    ├── planillas/
-│        ├── asgi.py
-│        ├── __init__.py
-│        ├── settings.py
-│        ├── urls.py
-│        └── wsgi.py
-│    ├── apps/
-│        ├── __init__.py
-│        └── middleware.py
-│        ├── procesos/
-│            ├── models.py
-│            ├── serializers.py
-│            ├── __init__.py
-│            ├── apps.py
-│            ├── admin.py
-│            ├── utils.py
-│            ├── tests.py
-│            ├── urls.py
-│            └── views.py
-│            ├── management/
-│                ├── commands/
-│                    └── generar_boletas.py
-│        ├── reportes/
-│            ├── models.py
-│            ├── serializers.py
-│            ├── __init__.py
-│            ├── apps.py
-│            ├── admin.py
-│            ├── tests.py
-│            ├── urls.py
-│            └── views.py
-│        ├── configuracion/
-│            ├── models.py
-│            ├── serializers.py
-│            ├── __init__.py
-│            ├── apps.py
-│            ├── admin.py
-│            ├── tests.py
-│            ├── urls.py
-│            └── views.py
-│        ├── usuarios/
-│            ├── models.py
-│            ├── serializers.py
-│            ├── __init__.py
-│            ├── apps.py
-│            ├── admin.py
-│            ├── tests.py
-│            ├── urls.py
-│            └── views.py
-│        ├── trabajadores/
-│            ├── models.py
-│            ├── serializers.py
-│            ├── __init__.py
-│            ├── apps.py
-│            ├── admin.py
-│            ├── tests.py
-│            ├── urls.py
-│            └── views.py
-│        ├── transacciones/
-│            ├── models.py
-│            ├── serializers.py
-│            ├── __init__.py
-│            ├── apps.py
-│            ├── admin.py
-│            ├── tests.py
-│            ├── urls.py
-│            └── views.py
-│        ├── planillas/
-│            ├── models.py
-│            ├── serializers.py
-│            ├── __init__.py
-│            ├── apps.py
-│            ├── admin.py
-│            ├── tests.py
-│            ├── urls.py
-│            └── views.py
-│        ├── auditoria/
-│            ├── models.py
-│            ├── serializers.py
-│            ├── __init__.py
-│            ├── apps.py
-│            ├── admin.py
-│            ├── tests.py
-│            ├── urls.py
-│            └── views.py
 
-
-## Contenido de los Archivos:
-**Ruta: /Volumes/Datos/Trabajo/Sistemas/Planilla/backend/planillas/generar_transacciones.py**
-```Python
-import random
-
-def generar_insert(contrato_id, transaccion_id, monto_min, monto_max, periodo_inicial, periodo_final, estado):
-    monto = round(random.uniform(monto_min, monto_max), 2)
-    return f"({contrato_id}, {transaccion_id}, {monto}, '{periodo_inicial}', '{periodo_final}', {estado})"
-
-def generar_sql_inserts():
-    contratos_ids = range(1, 126)
-    transacciones_ids = {
-        "haberes": 1,
-        "bonificaciones": 2,
-        "descuentos": 5,
-        "aportes": 4
-    }
-
-    sql_haberes = "INSERT INTO transacciones_trabajadores (contrato_id, transaccion_id, monto, periodo_inicial, periodo_final, estado)\nVALUES\n"
-    sql_bonificaciones = "INSERT INTO transacciones_trabajadores (contrato_id, transaccion_id, monto, periodo_inicial, periodo_final, estado)\nVALUES\n"
-    sql_descuentos = "INSERT INTO transacciones_trabajadores (contrato_id, transaccion_id, monto, periodo_inicial, periodo_final, estado)\nVALUES\n"
-    sql_aportes = "INSERT INTO transacciones_trabajadores (contrato_id, transaccion_id, monto, periodo_inicial, periodo_final, estado)\nVALUES\n"
-
-    haberes_values = []
-    bonificaciones_values = []
-    descuentos_values = []
-    aportes_values = []
-
-    for contrato_id in contratos_ids:
-        haberes_values.append(generar_insert(contrato_id, transacciones_ids["haberes"], 1400, 1700, "202406", "202412", 1))
-        bonificaciones_values.append(generar_insert(contrato_id, transacciones_ids["bonificaciones"], 200, 300, "202406", "202412", 1))
-        descuentos_values.append(generar_insert(contrato_id, transacciones_ids["descuentos"], 100, 200, "202406", "202412", 1))
-        aportes_values.append(generar_insert(contrato_id, transacciones_ids["aportes"], 300, 400, "202406", "202412", 1))
-
-    sql_haberes += ",\n".join(haberes_values) + ";\n"
-    sql_bonificaciones += ",\n".join(bonificaciones_values) + ";\n"
-    sql_descuentos += ",\n".join(descuentos_values) + ";\n"
-    sql_aportes += ",\n".join(aportes_values) + ";\n"
-
-    return sql_haberes, sql_bonificaciones, sql_descuentos, sql_aportes
-
-if __name__ == "__main__":
-    sql_haberes, sql_bonificaciones, sql_descuentos, sql_aportes = generar_sql_inserts()
-    with open("insert_transacciones.sql", "w") as file:
-        file.write("-- Insertar haberes\n")
-        file.write(sql_haberes)
-        file.write("\n-- Insertar bonificaciones\n")
-        file.write(sql_bonificaciones)
-        file.write("\n-- Insertar descuentos\n")
-        file.write(sql_descuentos)
-        file.write("\n-- Insertar aportes\n")
-        file.write(sql_aportes)
-
-    print("Archivo SQL generado con éxito.")
+```
+├── logs/
+│   ├── error.log
+│   ├── debug.log.4
+│   ├── debug.log.3
+│   ├── debug.log.2
+│   ├── debug.log.5
+│   ├── debug.log
+│   └── debug.log.1
+├── static/
+├── planillas/
+│   ├── settings/
+│   │   ├── __init__.py
+│   │   ├── development.py
+│   │   ├── base.py
+│   │   └── production.py
+│   ├── swagger.py
+│   ├── asgi.py
+│   ├── __init__.py
+│   ├── urls.py
+│   └── wsgi.py
+├── apps/
+│   ├── procesos/
+│   │   ├── periodo_normal/
+│   │   │   ├── generar_boletas_pago.py
+│   │   │   ├── __init__.py
+│   │   │   ├── cerrar_aperturar_periodo.py
+│   │   │   └── calcular_planilla_remuneraciones.py
+│   │   ├── periodo_adicional/
+│   │   │   └── __init__.py
+│   │   ├── management/
+│   │   │   └── commands/
+│   │   │       └── generar_boletas.py
+│   │   ├── models.py
+│   │   ├── serializers.py
+│   │   ├── __init__.py
+│   │   ├── apps.py
+│   │   ├── admin.py
+│   │   ├── utils.py
+│   │   ├── tests.py
+│   │   ├── urls.py
+│   │   └── views.py
+│   ├── reportes/
+│   │   ├── models.py
+│   │   ├── serializers.py
+│   │   ├── __init__.py
+│   │   ├── apps.py
+│   │   ├── admin.py
+│   │   ├── tests.py
+│   │   ├── urls.py
+│   │   └── views.py
+│   ├── configuracion/
+│   │   ├── models.py
+│   │   ├── serializers.py
+│   │   ├── __init__.py
+│   │   ├── apps.py
+│   │   ├── admin.py
+│   │   ├── tests.py
+│   │   ├── urls.py
+│   │   └── views.py
+│   ├── usuarios/
+│   │   ├── models.py
+│   │   ├── serializers.py
+│   │   ├── __init__.py
+│   │   ├── apps.py
+│   │   ├── admin.py
+│   │   ├── tests.py
+│   │   ├── urls.py
+│   │   └── views.py
+│   ├── trabajadores/
+│   │   ├── models.py
+│   │   ├── serializers.py
+│   │   ├── __init__.py
+│   │   ├── apps.py
+│   │   ├── admin.py
+│   │   ├── tests.py
+│   │   ├── urls.py
+│   │   └── views.py
+│   ├── transacciones/
+│   │   ├── models.py
+│   │   ├── serializers.py
+│   │   ├── __init__.py
+│   │   ├── apps.py
+│   │   ├── admin.py
+│   │   ├── tests.py
+│   │   ├── urls.py
+│   │   └── views.py
+│   ├── planillas/
+│   │   ├── models.py
+│   │   ├── serializers.py
+│   │   ├── __init__.py
+│   │   ├── apps.py
+│   │   ├── admin.py
+│   │   ├── tests.py
+│   │   ├── urls.py
+│   │   └── views.py
+│   ├── auditoria/
+│   │   ├── models.py
+│   │   ├── serializers.py
+│   │   ├── __init__.py
+│   │   ├── apps.py
+│   │   ├── admin.py
+│   │   ├── tests.py
+│   │   ├── urls.py
+│   │   └── views.py
+│   ├── __init__.py
+│   └── middleware.py
+├── media/
+├── db_planillas.sqlite3
+├── Tablas Parametricas.xlsx
+├── estructura_de_proyecto.md
+└── manage.py
 ```
 
-**Ruta: /Volumes/Datos/Trabajo/Sistemas/Planilla/backend/planillas/planillas/asgi.py**
-```Python
-"""
-ASGI config for planillas project.
+## Contenido de los Archivos:
 
-It exposes the ASGI callable as a module-level variable named ``application``.
+**Ruta: /Volumes/Datos/Trabajo/Sistemas/Planilla/backend/planillas/planillas/swagger.py**
+```python
+# planillas/swagger.py
+from drf_yasg import openapi
+from drf_yasg.views import get_schema_view
+from rest_framework import permissions
+from rest_framework_simplejwt.authentication import JWTAuthentication
+
+schema_view = get_schema_view(
+    openapi.Info(
+        title="Sistema de Planillas API",
+        default_version='v1',
+        description="Documentación de la API del Sistema de Planillas",
+    ),
+    public=True,
+    permission_classes=(permissions.AllowAny,),
+    authentication_classes=(JWTAuthentication,),
+)
+```
+
+**Ruta: /Volumes/Datos/Trabajo/Sistemas/Planilla/backend/planillas/planillas/__init__.py**
+```python
+```
+
+**Ruta: /Volumes/Datos/Trabajo/Sistemas/Planilla/backend/planillas/planillas/urls.py**
+```python
+# planillas/urls.py (en el archivo principal de urls del proyecto)
+from django.contrib import admin
+from django.urls import path, include, re_path
+from rest_framework import permissions
+from .swagger import schema_view  # Asegúrate de que esta importación apunte correctamente a tu archivo swagger.py
+
+from apps.usuarios.views import CustomLoginView, CustomLogoutView, CustomUserDetail, ProtectedView
+from rest_framework_simplejwt.views import (
+    TokenObtainPairView,
+    TokenRefreshView,
+)
+
+from django.conf import settings
+from django.conf.urls.static import static
+
+urlpatterns = [
+    path('admin/', admin.site.urls),
+    path('api/auth/login/', CustomLoginView.as_view(), name='custom_login'),  # Ruta para login
+    path('api/auth/refresh/', TokenRefreshView.as_view(), name='token_refresh'),  # Ruta para refrescar token
+    path('api/auth/user/', CustomUserDetail.as_view(), name='custom_user_detail'),  # Ruta para obtener detalles del usuario autenticado
+
+    path('api/configuracion/', include('apps.configuracion.urls')),
+    path('api/usuarios/', include('apps.usuarios.urls')),
+    path('api/trabajadores/', include('apps.trabajadores.urls')),
+    path('api/transacciones/', include('apps.transacciones.urls')),
+    path('api/planillas/', include('apps.planillas.urls')),
+    path('api/reportes/', include('apps.reportes.urls')),
+    path('api/procesos/', include('apps.procesos.urls')),
+    path('api/auditoria/', include('apps.auditoria.urls')),
+    path('swagger/', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
+    path('redoc/', schema_view.with_ui('redoc', cache_timeout=0), name='schema-redoc'),
+    re_path(r'^$', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui-redirect'),
+]
+
+if settings.DEBUG:
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+```
+
+**Ruta: /Volumes/Datos/Trabajo/Sistemas/Planilla/backend/planillas/planillas/wsgi.py**
+```python
+"""
+WSGI config for planillas project.
+
+It exposes the WSGI callable as a module-level variable named ``application``.
 
 For more information on this file, see
-https://docs.djangoproject.com/en/5.0/howto/deployment/asgi/
+https://docs.djangoproject.com/en/5.0/howto/deployment/wsgi/
 """
 
 import os
 
-from django.core.asgi import get_asgi_application
+from django.core.wsgi import get_wsgi_application
 
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'planillas.settings')
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'planillas.settings.production')
 
-application = get_asgi_application()
+application = get_wsgi_application()
 ```
 
-**Ruta: /Volumes/Datos/Trabajo/Sistemas/Planilla/backend/planillas/planillas/__init__.py**
-```Python
+**Ruta: /Volumes/Datos/Trabajo/Sistemas/Planilla/backend/planillas/planillas/settings/__init__.py**
+```python
+import os
+from decouple import config
+
+ENVIRONMENT = config('ENVIRONMENT', default='development')
+
+if ENVIRONMENT == 'production':
+    from .production import *
+else:
+    from .development import *
 ```
 
-**Ruta: /Volumes/Datos/Trabajo/Sistemas/Planilla/backend/planillas/planillas/settings.py**
-```Python
-"""
-Django settings for planillas project.
+**Ruta: /Volumes/Datos/Trabajo/Sistemas/Planilla/backend/planillas/planillas/settings/development.py**
+```python
+# planillas/settings/development.py
+from .base import *
 
-Generated by 'django-admin startproject' using Django 5.0.6.
-
-For more information on this file, see
-https://docs.djangoproject.com/en/5.0/topics/settings/
-
-For the full list of settings and their values, see
-https://docs.djangoproject.com/en/5.0/ref/settings/
-"""
-
-from pathlib import Path
-
-# Build paths inside the project like this: BASE_DIR / 'subdir'.
-BASE_DIR = Path(__file__).resolve().parent.parent
-
-
-# Quick-start development settings - unsuitable for production
-# See https://docs.djangoproject.com/en/5.0/howto/deployment/checklist/
-
-# SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-q8ttyk@%x5x0p1utw-x3cfvb9xl7bi84&2v9o*3i437r=q)fj0'
-
-# SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['localhost', '127.0.0.1']
 
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / 'db_planillas.sqlite3',
+    }
+}
+
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+    }
+}
+
+# Configuración de correo para desarrollo
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+
+# Permite todas las origenes en desarrollo
+CORS_ALLOW_ALL_ORIGINS = True
+
+# Configuración de CORS para desarrollo
+CORS_ALLOW_CREDENTIALS = True
+
+
+CORS_ORIGIN_WHITELIST = [
+    'http://localhost:5173',  # Añade aquí el origen de tu frontend
+    'http://localhost:9000',
+    'http://192.168.28.129:9000'
+]```
+
+**Ruta: /Volumes/Datos/Trabajo/Sistemas/Planilla/backend/planillas/planillas/settings/base.py**
+```python
+import os
+from pathlib import Path
+from decouple import config, Csv
+
+# Build paths inside the project like this: BASE_DIR / 'subdir'.
+BASE_DIR = Path(__file__).resolve().parent.parent.parent
+
+SECRET_KEY = config('SECRET_KEY')
+
+ALLOWED_HOSTS = config('ALLOWED_HOSTS', cast=Csv())
 
 # Application definition
 INSTALLED_APPS = [
@@ -214,7 +274,11 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'rest_framework_simplejwt',
     'rest_framework',
+    'rest_framework.authtoken',  # Necesario para la autenticación con token
+    'corsheaders',
+    'auditlog',
     'drf_yasg',
     'apps.usuarios',
     'apps.trabajadores',
@@ -227,10 +291,11 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',
+    'django.middleware.csrf.CsrfViewMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
-    'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
@@ -256,21 +321,6 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'planillas.wsgi.application'
 
-
-# Database
-# https://docs.djangoproject.com/en/5.0/ref/settings/#databases
-
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db_planillas.sqlite3',
-    }
-}
-
-
-# Password validation
-# https://docs.djangoproject.com/en/5.0/ref/settings/#auth-password-validators
-
 AUTH_PASSWORD_VALIDATORS = [
     {
         'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
@@ -286,10 +336,6 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-
-# Internationalization
-# https://docs.djangoproject.com/en/5.0/topics/i18n/
-
 LANGUAGE_CODE = 'es-PE'
 
 TIME_ZONE = 'America/Lima'
@@ -298,17 +344,14 @@ USE_I18N = True
 
 USE_TZ = True
 
+STATIC_URL = '/static/'
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')]
 
-# Static files (CSS, JavaScript, Images)
-# https://docs.djangoproject.com/en/5.0/howto/static-files/
-
-STATIC_URL = 'static/'
-
-# Default primary key field type
-# https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
+MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
-
 
 REST_FRAMEWORK = {
     'DEFAULT_RENDERER_CLASSES': (
@@ -317,79 +360,251 @@ REST_FRAMEWORK = {
     'DEFAULT_PARSER_CLASSES': (
         'rest_framework.parsers.JSONParser',
     ),
-    'DEFAULT_AUTHENTICATION_CLASSES': (
-        'rest_framework.authentication.SessionAuthentication',
-        'rest_framework.authentication.BasicAuthentication',
-    ),
-    'DEFAULT_PERMISSION_CLASSES': (
+    # 'DEFAULT_AUTHENTICATION_CLASSES': [
+    #     'rest_framework.authentication.TokenAuthentication',
+    # ],
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+    ],
+    'DEFAULT_PERMISSION_CLASSES': [
         'rest_framework.permissions.IsAuthenticated',
-    ),
+    ],
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
+    'PAGE_SIZE': 100,
+
+    'DEFAULT_THROTTLE_CLASSES': [
+        'rest_framework.throttling.AnonRateThrottle',
+        'rest_framework.throttling.UserRateThrottle'
+    ],
+    
+    'DEFAULT_THROTTLE_RATES': {
+        'user': '100/minute',  # Ajusta esto según tus necesidades
+        'anon': '50/minute',
+    }
+    
+    # 'DEFAULT_THROTTLE_RATES': {
+    #     'anon': '100/day',
+    #     'user': '1000/day'
+    # }
 }
 
-AUTH_USER_MODEL = 'usuarios.User'```
+AUTH_USER_MODEL = 'usuarios.User'
 
-**Ruta: /Volumes/Datos/Trabajo/Sistemas/Planilla/backend/planillas/planillas/urls.py**
-```Python
-# planillas/urls.py (o el archivo principal de urls del proyecto)
-from django.contrib import admin
-from django.urls import path, include, re_path
-from rest_framework import permissions
-from drf_yasg.views import get_schema_view
-from drf_yasg import openapi
-
-schema_view = get_schema_view(
-    openapi.Info(
-        title="Sistema de Planillas API",
-        default_version='v1',
-        description="Documentación de la API del Sistema de Planillas",
-    ),
-    public=True,
-    permission_classes=(permissions.AllowAny,),
-)
-
-urlpatterns = [
-    path('admin/', admin.site.urls),
-    path('api/auth/', include('rest_framework.urls')),
-    path('api/configuracion/', include('apps.configuracion.urls')),
-    path('api/usuarios/', include('apps.usuarios.urls')),
-    path('api/trabajadores/', include('apps.trabajadores.urls')),
-    path('api/transacciones/', include('apps.transacciones.urls')),
-    path('api/planillas/', include('apps.planillas.urls')),
-    path('api/reportes/', include('apps.reportes.urls')),
-    path('api/procesos/', include('apps.procesos.urls')),
-    path('api/auditoria/', include('apps.auditoria.urls')),
-    path('swagger/', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
-    path('redoc/', schema_view.with_ui('redoc', cache_timeout=0), name='schema-redoc'),
-    re_path(r'^$', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui-redirect'),
+# Configuración básica de CORS
+CORS_ALLOW_CREDENTIALS = True
+CORS_ALLOWED_ORIGINS = [
+    'http://localhost:5173',  # URL de tu frontend
+    'http://localhost:9000',
+    'http://192.168.28.129:9000'
+    
 ]
-```
+CSRF_TRUSTED_ORIGINS = [
+    'http://localhost:5173',  # URL de tu frontend
+    'http://localhost:9000',
+    'http://192.168.28.129:9000'
+]
 
-**Ruta: /Volumes/Datos/Trabajo/Sistemas/Planilla/backend/planillas/planillas/wsgi.py**
-```Python
-"""
-WSGI config for planillas project.
+# Permitir todas las métodos en CORS
+CORS_ALLOW_METHODS = [
+    'DELETE',
+    'GET',
+    'OPTIONS',
+    'PATCH',
+    'POST',
+    'PUT',
+]
 
-It exposes the WSGI callable as a module-level variable named ``application``.
 
-For more information on this file, see
-https://docs.djangoproject.com/en/5.0/howto/deployment/wsgi/
-"""
+# Configuracion de Logging
+import logging
 
-import os
+class CustomFormatter(logging.Formatter):
+    def format(self, record):
+        if hasattr(record, 'request'):
+            record.http_status = getattr(record, 'status_code', '')
+            record.http_user = record.request.user if hasattr(record.request, 'user') else ''
+            record.http_host = record.request.get_host() if hasattr(record.request, 'get_host') else ''
+            record.http_path = record.request.path if hasattr(record.request, 'path') else ''
+        else:
+            record.http_status = ''
+            record.http_user = ''
+            record.http_host = ''
+            record.http_path = ''
+        return super().format(record)
 
-from django.core.wsgi import get_wsgi_application
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'verbose': {
+            '()': CustomFormatter,
+            'format': '{levelname} {asctime} {module} {process:d} {thread:d} {message} {http_status} {http_user} {http_host} {http_path}',
+            'style': '{',
+        },
+        'simple': {
+            'format': '{levelname} {message}',
+            'style': '{',
+        },
+    },
+    'handlers': {
+        'rotating_file': {
+            'level': 'DEBUG',
+            'class': 'logging.handlers.RotatingFileHandler',
+            'filename': 'logs/debug.log',
+            'maxBytes': 1024 * 1024 * 5,  # 5 MB
+            'backupCount': 5,
+            'formatter': 'verbose',
+        },
+        'error_file': {
+            'level': 'ERROR',
+            'class': 'logging.handlers.RotatingFileHandler',
+            'filename': 'logs/error.log',
+            'maxBytes': 1024 * 1024 * 5,  # 5 MB
+            'backupCount': 5,
+            'formatter': 'verbose',
+        },
+        'console': {
+            'level': 'INFO',
+            'class': 'logging.StreamHandler',
+            'formatter': 'simple',
+        },
+    },
+    'loggers': {
+        'django': {
+            'handlers': ['rotating_file', 'error_file'],
+            'level': 'DEBUG',
+            'propagate': False,
+        },
+        'django.server': {
+            'handlers': ['rotating_file'],
+            'level': 'DEBUG',
+            'propagate': False,
+        },
+        'django.request': {
+            'handlers': ['rotating_file', 'error_file'],
+            'level': 'DEBUG',
+            'propagate': False,
+        },
+        'apps': {
+            'handlers': ['rotating_file', 'error_file'],
+            'level': 'DEBUG',
+            'propagate': False,
+        },
+        'security': {
+            'handlers': ['rotating_file', 'error_file', 'console'],
+            'level': 'INFO',
+            'propagate': False,
+        },
+        'django.contrib.auth': {
+            'handlers': ['rotating_file', 'error_file'],
+            'level': 'DEBUG',
+            'propagate': False,
+        },
+        'django.db.backends': {
+            'handlers': ['rotating_file', 'error_file'],
+            'level': 'DEBUG',
+            'propagate': False,
+        },
+    },
+    'root': {
+        'handlers': ['console'],
+        'level': 'DEBUG',
+    },
+}
 
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'planillas.settings')
+from datetime import timedelta
 
-application = get_wsgi_application()
-```
+# Configuración detallada de Simple JWT
+SIMPLE_JWT = {
+    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=20),  # Tiempo de vida del token de acceso
+    'REFRESH_TOKEN_LIFETIME': timedelta(hours=6),     # Tiempo de vida del token de refresco
+    'ROTATE_REFRESH_TOKENS': True,  # No rotamos los tokens de refresco automáticamente
+    'BLACKLIST_AFTER_ROTATION': True,  # Ponemos en lista negra los tokens después de la rotación
+    'ALGORITHM': 'HS256',  # Algoritmo de encriptación usado
+    'SIGNING_KEY': SECRET_KEY,  # Clave para firmar los tokens (usamos la SECRET_KEY de Django)
+    'VERIFYING_KEY': None,  # Clave de verificación (no necesaria con HS256)
+    'AUTH_HEADER_TYPES': ('Bearer',),  # Tipo de header de autenticación
+    'USER_ID_FIELD': 'id',  # Campo que usamos como ID de usuario
+    'USER_ID_CLAIM': 'user_id',  # Nombre del claim para el ID de usuario en el token
+    'AUTH_TOKEN_CLASSES': ('rest_framework_simplejwt.tokens.AccessToken',),
+    'TOKEN_TYPE_CLAIM': 'token_type',
+}
+
+# # Configuración de JWT
+# SIMPLE_JWT = {
+#     'ACCESS_TOKEN_LIFETIME': timedelta(minutes=60),  # Duración del token de acceso
+#     'REFRESH_TOKEN_LIFETIME': timedelta(days=1),  # Duración del token de refresco
+#     'ROTATE_REFRESH_TOKENS': False,  # No rotar tokens de refresco automáticamente
+#     'BLACKLIST_AFTER_ROTATION': True,  # Invalidar token de refresco después de rotación
+#     'AUTH_HEADER_TYPES': ('Bearer',),  # Tipo de encabezado de autorización
+# }
+
+SWAGGER_SETTINGS = {
+    'SECURITY_DEFINITIONS': {
+        'Bearer': {
+            'type': 'apiKey',
+            'name': 'Authorization',
+            'in': 'header'
+        }
+    }
+}```
+
+**Ruta: /Volumes/Datos/Trabajo/Sistemas/Planilla/backend/planillas/planillas/settings/production.py**
+```python
+# planillas/settings/production.py
+
+from .base import *
+
+DEBUG = False
+
+ALLOWED_HOSTS = config('ALLOWED_HOSTS', cast=Csv())
+
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': config('DB_NAME'),
+        'USER': config('DB_USER'),
+        'PASSWORD': config('DB_PASSWORD'),
+        'HOST': config('DB_HOST'),
+        'PORT': config('DB_PORT', cast=int),
+    }
+}
+
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.memcached.PyMemcacheCache',
+        'LOCATION': config('MEMCACHED_LOCATION'),
+    }
+}
+
+# Configuración de seguridad para producción
+SECURE_SSL_REDIRECT = True
+SESSION_COOKIE_SECURE = True
+CSRF_COOKIE_SECURE = True
+SECURE_BROWSER_XSS_FILTER = True
+SECURE_CONTENT_TYPE_NOSNIFF = True
+
+# Configuración de correo para producción
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = config('EMAIL_HOST')
+EMAIL_PORT = config('EMAIL_PORT', cast=int)
+EMAIL_USE_TLS = config('EMAIL_USE_TLS', cast=bool)
+EMAIL_HOST_USER = config('EMAIL_HOST_USER')
+EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD')
+
+# En producción, especifica los orígenes permitidos
+CORS_ALLOWED_ORIGINS = [
+    "https://yourdomain.com",
+    "https://www.yourdomain.com",
+    # Añade aquí los dominios desde los que se accederá a tu API en producción
+]```
 
 **Ruta: /Volumes/Datos/Trabajo/Sistemas/Planilla/backend/planillas/apps/__init__.py**
-```Python
+```python
 ```
 
 **Ruta: /Volumes/Datos/Trabajo/Sistemas/Planilla/backend/planillas/apps/middleware.py**
-```Python
+```python
 # apps/middleware.py
 from django.http import HttpResponseForbidden
 
@@ -407,14 +622,24 @@ class UgelRestrictionMiddleware:
 ```
 
 **Ruta: /Volumes/Datos/Trabajo/Sistemas/Planilla/backend/planillas/apps/procesos/models.py**
-```Python
+```python
 from django.db import models
+from apps.planillas.models import Planilla
 
-# Create your models here.
-```
+class ProcesosPlanilla(models.Model):
+    nombre = models.CharField(max_length=100)
+    descripcion = models.TextField(blank=True)
+    planillas = models.ManyToManyField(Planilla, blank=True)
+
+    def __str__(self):
+        return self.nombre
+
+    class Meta:
+        verbose_name = "Proceso de Planilla"
+        verbose_name_plural = "Procesos de Planillas"```
 
 **Ruta: /Volumes/Datos/Trabajo/Sistemas/Planilla/backend/planillas/apps/procesos/serializers.py**
-```Python
+```python
 # apps/procesos/serializers.py
 from rest_framework import serializers
 
@@ -424,11 +649,11 @@ class ProcesarPlanillaSerializer(serializers.Serializer):
 ```
 
 **Ruta: /Volumes/Datos/Trabajo/Sistemas/Planilla/backend/planillas/apps/procesos/__init__.py**
-```Python
+```python
 ```
 
 **Ruta: /Volumes/Datos/Trabajo/Sistemas/Planilla/backend/planillas/apps/procesos/apps.py**
-```Python
+```python
 from django.apps import AppConfig
 
 
@@ -438,15 +663,78 @@ class ProcesosConfig(AppConfig):
 ```
 
 **Ruta: /Volumes/Datos/Trabajo/Sistemas/Planilla/backend/planillas/apps/procesos/admin.py**
-```Python
-# apps/procesos/admin.py
+```python
 from django.contrib import admin
+from .models import ProcesosPlanilla
+from apps.planillas.models import Planilla
+from .periodo_normal import CalcularPlanillaRemuneraciones, GenerarBoletasPago, CerrarAperturarPeriodo
 
-# Registrar modelos si es necesario
-```
+@admin.action(description='Generar boletas para las planillas seleccionadas')
+def generar_boletas(modeladmin, request, queryset):
+    for proceso in queryset:
+        for planilla in proceso.planillas.all():
+            GenerarBoletasPago.generar(planilla.id)
+    modeladmin.message_user(request, "Boletas generadas exitosamente.")
+
+@admin.action(description='Calcular planilla de remuneraciones para las planillas seleccionadas')
+def calcular_planilla_remuneraciones(modeladmin, request, queryset):
+    for proceso in queryset:
+        for planilla in proceso.planillas.all():
+            CalcularPlanillaRemuneraciones.calcular(planilla.id)
+    modeladmin.message_user(request, "Planillas de remuneraciones calculadas exitosamente.")
+
+
+@admin.action(description='Cerrar y aperturar nuevo periodo')
+def cerrar_aperturar_periodo(modeladmin, request, queryset):
+    for proceso in queryset:
+        try:
+        # Asumiendo que se obtienen mes, anio y es_adicional de algún formulario o método
+            periodo = "202407"
+            es_adicional = False  # Ejemplo de valor, cambiar según sea necesario
+            CerrarAperturarPeriodo.cerrar_aperturar(periodo, es_adicional)
+            modeladmin.message_user(request, "Periodo cerrado y nuevo periodo creado exitosamente.")
+        except Exception as e:
+            modeladmin.message_user(request, f"Error al cerrar y aperturar periodo: {str(e)}", level='error')
+
+@admin.action(description='Revertir cálculo de planilla de remuneraciones para las planillas seleccionadas')
+def revertir_calculo(modeladmin, request, queryset):
+    for proceso in queryset:
+        for planilla in proceso.planillas.all():
+            CalcularPlanillaRemuneraciones.revertir_calculo(planilla.id)
+    modeladmin.message_user(request, "Cálculo de planillas de remuneraciones revertido exitosamente.")
+
+@admin.action(description='Revertir boletas generadas para las planillas seleccionadas')
+def revertir_boletas_generadas(modeladmin, request, queryset):
+    for proceso in queryset:
+        for planilla in proceso.planillas.all():
+            GenerarBoletasPago.revertir_boletas_generadas(planilla.id)
+    modeladmin.message_user(request, "Boletas generadas revertidas exitosamente.")
+
+@admin.action(description='Revertir Cierre/Apertura de periodos')
+def revertir_cierre_apertura(modeladmin, request, queryset):
+    for proceso in queryset:
+        for planilla in proceso.planillas.all():
+            CerrarAperturarPeriodo.revertir_cierre_apertura(planilla.periodo)
+    modeladmin.message_user(request, "Cierre/Apertura de periodos revertidos exitosamente.")
+
+
+class PlanillaInline(admin.TabularInline):
+    model = ProcesosPlanilla.planillas.through
+    extra = 1
+
+@admin.register(ProcesosPlanilla)
+class ProcesosPlanillaAdmin(admin.ModelAdmin):
+    list_display = ('nombre', 'descripcion', 'planillas_count')
+    actions = [cerrar_aperturar_periodo, calcular_planilla_remuneraciones, revertir_calculo, generar_boletas, revertir_boletas_generadas, revertir_cierre_apertura]
+    inlines = [PlanillaInline]
+    exclude = ('planillas',)
+
+    def planillas_count(self, obj):
+        return obj.planillas.count()
+    planillas_count.short_description = 'Número de Planillas'```
 
 **Ruta: /Volumes/Datos/Trabajo/Sistemas/Planilla/backend/planillas/apps/procesos/utils.py**
-```Python
+```python
 from django.db import transaction
 from apps.planillas.models import Planilla, Contrato, Boleta
 
@@ -476,85 +764,513 @@ def generar_boletas_para_planilla(planilla_id):
 ```
 
 **Ruta: /Volumes/Datos/Trabajo/Sistemas/Planilla/backend/planillas/apps/procesos/tests.py**
-```Python
-from django.test import TestCase
+```python
+def generar_meses_validos(anio):
+    meses_validos = {}
+    for mes in range(1, 13):
+        mes_str = str(mes).zfill(2)
+        base_periodo = int(f"{anio}{mes_str}")
+        # Generar las 5 planillas válidas para cada mes
+        meses_validos[base_periodo] = [base_periodo + i * 20 for i in range(5)]
+    return meses_validos
 
-# Create your tests here.
+# Ejemplo de uso para el año 2024
+meses_validos_2024 = generar_meses_validos(2025)
+for mes, periodos in meses_validos_2024.items():
+    print(f"{mes}: {periodos}")
 ```
 
 **Ruta: /Volumes/Datos/Trabajo/Sistemas/Planilla/backend/planillas/apps/procesos/urls.py**
-```Python
+```python
 # apps/procesos/urls.py
 from django.urls import path
-from .views import ProcesarPlanillaView
+from .views import CerrarAperturarPeriodoView, CalcularPlanillaRemuneracionesView, GenerarBoletasPagoView
 
 urlpatterns = [
-    path('procesar-planilla/', ProcesarPlanillaView.as_view(), name='procesar-planilla'),
-]
-```
+    path('cerrar-aperturar-periodo/', CerrarAperturarPeriodoView.as_view(), name='cerrar-aperturar-periodo'),
+    path('calcular-planilla-remuneraciones/', CalcularPlanillaRemuneracionesView.as_view(), name='calcular-planilla-remuneraciones'),
+    path('generar-boletas-pago/', GenerarBoletasPagoView.as_view(), name='generar-boletas-pago'),
+]```
 
 **Ruta: /Volumes/Datos/Trabajo/Sistemas/Planilla/backend/planillas/apps/procesos/views.py**
-```Python
+```python
 # apps/procesos/views.py
-from django.db import models
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
-from apps.configuracion.models import Periodo, TipoPlanilla
-from apps.trabajadores.models import Trabajador
-from apps.planillas.models import Contrato
-from apps.transacciones.models import TransaccionContrato
-from .serializers import ProcesarPlanillaSerializer
+from .periodo_normal import CalcularPlanillaRemuneraciones, GenerarBoletasPago, CerrarAperturarPeriodo
 
-class ProcesarPlanillaView(APIView):
-    def post(self, request, *args, **kwargs):
-        serializer = ProcesarPlanillaSerializer(data=request.data)
-        if serializer.is_valid():
-            periodo = serializer.validated_data['periodo']
-            tipo_planilla_id = serializer.validated_data['tipo_planilla']
+class CerrarAperturarPeriodoView(APIView):
+    def post(self, request):
+        try:
+            CerrarAperturarPeriodo()
+            return Response({"message": "Periodo cerrado y nuevo periodo aperturado con éxito."}, status=status.HTTP_200_OK)
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
-            try:
-                periodo_obj = Periodo.objects.get(periodo=periodo)
-                tipo_planilla_obj = TipoPlanilla.objects.get(id=tipo_planilla_id)
-            except (Periodo.DoesNotExist, TipoPlanilla.DoesNotExist) as e:
-                return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+class CalcularPlanillaRemuneracionesView(APIView):
+    def post(self, request):
+        try:
+            CalcularPlanillaRemuneraciones()
+            return Response({"message": "Planilla de remuneraciones calculada con éxito."}, status=status.HTTP_200_OK)
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
-            # Filtrar contratos activos (situacion = 'HAB')
-            contratos = Contrato.objects.filter(situacion__codigo='HAB')
-            for contrato in contratos:
-                total_haberes = TransaccionContrato.objects.filter(
-                    contrato=contrato,
-                    transaccion__tipo='HABER',
-                    periodo_inicial__lte=periodo,
-                    periodo_final__gte=periodo
-                ).aggregate(total=models.Sum('monto'))['total'] or 0
+class GenerarBoletasPagoView(APIView):
+    def post(self, request):
+        planilla_id = request.data.get('planilla_id')
+        if not planilla_id:
+            return Response({"error": "Se requiere el ID de la planilla."}, status=status.HTTP_400_BAD_REQUEST)
+        try:
+            GenerarBoletasPago(planilla_id)
+            return Response({"message": "Boletas de pago generadas con éxito."}, status=status.HTTP_200_OK)
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)```
 
-                total_descuentos = TransaccionContrato.objects.filter(
-                    contrato=contrato,
-                    transaccion__tipo='DESCUENTO',
-                    periodo_inicial__lte=periodo,
-                    periodo_final__gte=periodo
-                ).aggregate(total=models.Sum('monto'))['total'] or 0
+**Ruta: /Volumes/Datos/Trabajo/Sistemas/Planilla/backend/planillas/apps/procesos/periodo_normal/generar_boletas_pago.py**
+```python
+from django.db import transaction
+from apps.planillas.models import Planilla, Boleta, Contrato, BoletaTransaccion
+from django.db.models import Sum, Max
+from decimal import Decimal
+from django.utils import timezone
 
-                essalud = total_haberes * 0.09  # Ejemplo de cálculo de ESSALUD
 
-                Contrato.objects.create(
-                    total_haberes=total_haberes,
-                    total_descuentos=total_descuentos,
-                    essalud=essalud,
-                    emitio_boleta=0,
-                    contrato=contrato,
-                    tipo_planilla=tipo_planilla_obj,
-                    periodo=periodo_obj,
-                    ugel=contrato.trabajador.ugel
+class GenerarBoletasPago:
+    @staticmethod
+    @transaction.atomic
+    def generar(planilla_id):
+        planilla = Planilla.objects.get(id=planilla_id)
+        contratos = Contrato.objects.filter(
+            clase_planilla=planilla.clase_planilla,
+            fuente_financiamiento=planilla.fuente_financiamiento,
+            trabajador__estado=True
+        ).exclude(situacion__nombre_situacion__in=['Suspendido', 'Baja'])
+
+        boletas_generadas = 0
+
+        for contrato in contratos:
+            boleta, created = Boleta.objects.get_or_create(
+                contrato=contrato,
+                planilla=planilla,
+                defaults={
+                    'centro_de_trabajo': contrato.centro_de_trabajo,
+                    'cargo': contrato.cargo.nombre_cargo if contrato.cargo else '',
+                    'fecha_ingreso': contrato.fecha_ingreso,
+                    'fecha_cese': contrato.fecha_cese,
+                    'clase_planilla': contrato.clase_planilla.nombre_clase_planilla,
+                    'fuente_financiamiento': contrato.fuente_financiamiento.nombre_fuente_financiamiento,
+                    'sueldo': contrato.sueldo,
+                    'dias_laborados': contrato.dias_laborados,
+                    'leyenda_permanente': contrato.leyenda_permanente,
+                    'jornada_laboral': contrato.jornada_laboral,
+                    'trabajador_nombres': contrato.trabajador.persona.nombres,
+                    'trabajador_apellidos': f"{contrato.trabajador.persona.apellido_paterno} {contrato.trabajador.persona.apellido_materno}",
+                    'trabajador_dni': contrato.trabajador.persona.numero_documento,
+                    'regimen_laboral': contrato.regimen_laboral.nombre_regimen_laboral,
+                    'tipo_servidor': contrato.tipo_servidor.nombre_tipo_servidor,
+                    'regimen_pensionario': contrato.trabajador.regimen_pensionario.nombre_regimen_pensionario,
+                    'banco': contrato.trabajador.banco.nombre_banco,
+                    'cuenta_bancaria': contrato.trabajador.numero_cuenta,
+                }
+            )
+
+            GenerarBoletasPago.calcular_totales(boleta)
+            GenerarBoletasPago.generar_numero_boleta(boleta)
+            GenerarBoletasPago.registrar_transacciones_boleta(boleta)
+            GenerarBoletasPago.actualizar_totales_planilla(boleta)
+
+            boletas_generadas += 1
+
+        return f"Se generaron o actualizaron {boletas_generadas} boletas para la planilla {planilla}."
+
+    @staticmethod
+    def calcular_totales(boleta):
+        transacciones = boleta.contrato.transacciones.filter(
+            periodo_inicial__lte=boleta.planilla.periodo.periodo,
+            periodo_final__gte=boleta.planilla.periodo.periodo,
+            estado=True
+        )
+        boleta.total_haberes = transacciones.filter(transaccion__tipo_transaccion='HABER').aggregate(Sum('monto'))['monto__sum'] or Decimal('0')
+        boleta.total_descuentos = transacciones.filter(transaccion__tipo_transaccion='DESCUENTO').aggregate(Sum('monto'))['monto__sum'] or Decimal('0')
+        boleta.total_aportes = transacciones.filter(transaccion__tipo_transaccion='APORTE').aggregate(Sum('monto'))['monto__sum'] or Decimal('0')
+        boleta.neto_a_pagar = boleta.total_haberes - boleta.total_descuentos
+        boleta.save()
+
+    @staticmethod
+    def generar_numero_boleta(boleta):
+        max_numero_boleta = Boleta.objects.filter(planilla=boleta.planilla).aggregate(Max('numero_boleta'))['numero_boleta__max']
+        if max_numero_boleta:
+            boleta.numero_boleta = str(int(max_numero_boleta) + 1).zfill(3)
+        else:
+            boleta.numero_boleta = '001'
+        boleta.save()
+
+    @staticmethod
+    def registrar_transacciones_boleta(boleta):
+        transacciones = boleta.contrato.transacciones.filter(
+            periodo_inicial__lte=boleta.planilla.periodo.periodo,
+            periodo_final__gte=boleta.planilla.periodo.periodo,
+            estado=True
+        )
+        for transaccion in transacciones:
+            BoletaTransaccion.objects.create(
+                boleta=boleta,
+                tipo=transaccion.transaccion.tipo_transaccion,
+                codigo=transaccion.transaccion.codigo_transaccion_mcpp,
+                descripcion=transaccion.transaccion.descripcion_transaccion,
+                monto=transaccion.monto
+            )
+
+    @staticmethod
+    def actualizar_totales_planilla(boleta):
+        planilla = boleta.planilla
+        planilla.total_haberes = Boleta.objects.filter(planilla=planilla).aggregate(Sum('total_haberes'))['total_haberes__sum'] or Decimal('0')
+        planilla.total_descuentos = Boleta.objects.filter(planilla=planilla).aggregate(Sum('total_descuentos'))['total_descuentos__sum'] or Decimal('0')
+        planilla.total_aportes = Boleta.objects.filter(planilla=planilla).aggregate(Sum('total_aportes'))['total_aportes__sum'] or Decimal('0')
+        planilla.save()
+
+    @staticmethod
+    def marcar_como_visualizada(boleta):
+        boleta.visualizada = True
+        boleta.fecha_visualizacion = timezone.now()
+        boleta.save()
+
+    @staticmethod
+    def marcar_como_descargada(boleta):
+        boleta.descargada = True
+        boleta.fecha_descarga = timezone.now()
+        boleta.save()
+
+
+    @staticmethod
+    @transaction.atomic
+    def revertir_boletas_generadas(planilla_id):
+        planilla = Planilla.objects.get(id=planilla_id)
+
+        # Obtener todas las boletas asociadas a la planilla
+        boletas = Boleta.objects.filter(planilla=planilla)
+
+        # Eliminar todas las transacciones de boletas asociadas a las boletas
+        BoletaTransaccion.objects.filter(boleta__in=boletas).delete()
+
+        # Eliminar todas las boletas asociadas a la planilla
+        boletas.delete()
+
+        # Restaurar los valores originales de la planilla (esto asume que tienes una forma de obtener los valores originales)
+        planilla.total_haberes = 0
+        planilla.total_descuentos = 0
+        planilla.total_aportes = 0
+        planilla.save()```
+
+**Ruta: /Volumes/Datos/Trabajo/Sistemas/Planilla/backend/planillas/apps/procesos/periodo_normal/__init__.py**
+```python
+from apps.procesos.periodo_normal.calcular_planilla_remuneraciones import CalcularPlanillaRemuneraciones
+from apps.procesos.periodo_normal.generar_boletas_pago import GenerarBoletasPago
+from apps.procesos.periodo_normal.cerrar_aperturar_periodo import CerrarAperturarPeriodo
+```
+
+**Ruta: /Volumes/Datos/Trabajo/Sistemas/Planilla/backend/planillas/apps/procesos/periodo_normal/cerrar_aperturar_periodo.py**
+```python
+# apps/procesos/periodo_normal/cerrar_aperturar_periodo.py
+from django.db import transaction, IntegrityError
+from django.core.exceptions import ValidationError
+from apps.configuracion.models import Periodo, ComisionAfp
+from apps.planillas.models import Planilla, Contrato
+
+
+
+class CerrarAperturarPeriodo:
+    @staticmethod
+    @transaction.atomic
+    def cerrar_aperturar(nuevo_periodo, es_adicional):
+        try:
+            periodo_a_cerrar = Periodo.objects.get(estado=True)
+        except Periodo.DoesNotExist:
+            raise ValidationError("No hay un periodo activo para cerrar.")
+        except Exception as e:
+            raise ValidationError(f"Error inesperado al buscar el periodo activo: {str(e)}")
+
+        periodo_a_cerrar_int = int(periodo_a_cerrar.periodo)
+        nuevo_periodo_int = int(nuevo_periodo)
+
+        if nuevo_periodo_int == periodo_a_cerrar_int:
+            raise ValidationError(f"El nuevo periodo {nuevo_periodo} no puede ser igual que el periodo actual {periodo_a_cerrar.periodo}.")
+
+        if es_adicional:
+            periodo_adicional_esperado = periodo_a_cerrar_int + 20
+            if not periodo_a_cerrar.es_adicional:
+                if nuevo_periodo_int != periodo_adicional_esperado:
+                    raise ValidationError(f"Para un periodo adicional, el nuevo periodo debe ser {periodo_adicional_esperado}")
+            else:
+                adicionales_existentes = Periodo.objects.filter(periodo__startswith=str(periodo_a_cerrar_int // 100)).count()
+                if adicionales_existentes >= 5:
+                    raise ValidationError("No se pueden crear más de cuatro periodos adicionales. Debes Aperturar un Periodo Normal.")
+                if nuevo_periodo_int != periodo_adicional_esperado:
+                    raise ValidationError(f"Para un periodo adicional, el nuevo periodo debe ser {periodo_adicional_esperado}")
+
+        if periodo_a_cerrar.es_adicional:
+            periodo_normal_anterior = Periodo.objects.filter(
+                periodo__lt=periodo_a_cerrar_int,
+                es_adicional=False
+            ).order_by('-periodo').first()
+
+            if not periodo_normal_anterior:
+                raise ValidationError("No se encontró un periodo normal anterior.")
+
+            periodo_normal_esperado = int(periodo_normal_anterior.periodo) + 1
+        else:
+            periodo_normal_esperado = periodo_a_cerrar_int + 1
+
+        if nuevo_periodo_int != periodo_normal_esperado:
+            raise ValidationError(f"El nuevo periodo normal debe ser {periodo_normal_esperado}")
+
+        try:
+            planillas_actuales = Planilla.objects.filter(periodo=periodo_a_cerrar, estado='APERTURADO')
+            for planilla in planillas_actuales:
+                planilla.estado = 'CERRADO'
+                planilla.save()
+
+            CerrarAperturarPeriodo.resetear_campos_contrato()
+
+            periodo_a_cerrar.estado = False
+            periodo_a_cerrar.save()
+
+            nuevo_periodo = Periodo(
+                periodo=str(nuevo_periodo),
+                es_adicional=es_adicional,
+                estado=True
+            )
+            nuevo_periodo.save()
+
+            CerrarAperturarPeriodo.crear_nuevas_planillas(nuevo_periodo, planillas_actuales)
+            CerrarAperturarPeriodo.copiar_comisiones_afp(periodo_a_cerrar, nuevo_periodo)
+
+            return nuevo_periodo
+        except IntegrityError as e:
+            raise ValidationError(f"Error de integridad en la base de datos: {str(e)}")
+        except ValidationError as e:
+            raise ValidationError(f"Error de validación: {str(e)}")
+        except Exception as e:
+            raise ValidationError(f"Error inesperado: {str(e)}")
+
+    @staticmethod
+    def resetear_campos_contrato():
+        try:
+            Contrato.objects.update(
+                dias_laborados=30,
+                leyenda_permanente='',
+            )
+        except Exception as e:
+            raise ValidationError(f"Error al resetear los campos del contrato: {str(e)}")
+
+    @staticmethod
+    def copiar_comisiones_afp(periodo_anterior, nuevo_periodo):
+        try:
+            # Desactivar comisiones anteriores
+            ComisionAfp.objects.filter(periodo=periodo_anterior).update(estado=False)
+
+            # Copiar comisiones del periodo anterior al nuevo periodo
+            comisiones_anteriores = ComisionAfp.objects.filter(periodo=periodo_anterior)
+            for comision in comisiones_anteriores:
+                ComisionAfp.objects.create(
+                    periodo=nuevo_periodo,
+                    afp=comision.afp,
+                    comision_flujo=comision.comision_flujo,
+                    comision_mixta=comision.comision_mixta,
+                    prima_seguro=comision.prima_seguro,
+                    aporte_obligatorio=comision.aporte_obligatorio,
+                    total_comision=comision.total_comision,
+                    estado=True  # Nuevo campo añadido
                 )
+        except Exception as e:
+            raise ValidationError(f"Error al copiar las comisiones de AFP: {str(e)}")
 
-            return Response({"message": "Planillas procesadas exitosamente"}, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    @staticmethod
+    @transaction.atomic
+    def crear_nuevas_planillas(nuevo_periodo, planillas_anteriores):
+        for planilla_anterior in planillas_anteriores:
+            intentos = 0
+            while intentos < 5:
+                try:
+                    correlativo = CerrarAperturarPeriodo.generar_correlativo(nuevo_periodo)
+                    Planilla.objects.create(
+                        correlativo=correlativo,
+                        clase_planilla=planilla_anterior.clase_planilla,
+                        fuente_financiamiento=planilla_anterior.fuente_financiamiento,
+                        periodo=nuevo_periodo,
+                        estado='APERTURADO'
+                    )
+                    break
+                except IntegrityError:
+                    intentos += 1
+                    if intentos >= 5:
+                        raise ValidationError("No se pudo crear una nueva planilla después de varios intentos debido a problemas de unicidad.")
+                except ValidationError as e:
+                    raise e
+                except Exception as e:
+                    raise ValidationError(f"Error al crear nuevas planillas: {str(e)}")
+
+    @staticmethod
+    def generar_correlativo(periodo):
+        try:
+            with transaction.atomic():
+                ultimo_correlativo = Planilla.objects.filter(periodo=periodo).order_by('-correlativo').first()
+                if ultimo_correlativo:
+                    nuevo_correlativo = str(int(ultimo_correlativo.correlativo) + 1).zfill(3)
+                else:
+                    nuevo_correlativo = '001'
+                return nuevo_correlativo
+        except Exception as e:
+            raise ValidationError(f"Error al generar el correlativo: {str(e)}")
+
+
+    @staticmethod
+    @transaction.atomic
+    def revertir_cierre_apertura(nuevo_periodo):
+        try:
+            # Intentar encontrar el periodo recién creado
+            periodo_recien_creado = Periodo.objects.filter(periodo=nuevo_periodo, estado=True).first()
+            if not periodo_recien_creado:
+                raise ValidationError("El nuevo periodo no existe o ya ha sido cerrado.")
+
+            # Eliminar las planillas creadas para el nuevo periodo
+            Planilla.objects.filter(periodo=periodo_recien_creado).delete()
+
+            # Eliminar el nuevo periodo
+            periodo_recien_creado.delete()
+
+            # Restaurar el estado del periodo cerrado
+            periodo_a_cerrar = Periodo.objects.filter(estado=False).order_by('-periodo').first()
+            if periodo_a_cerrar:
+                periodo_a_cerrar.estado = True
+                periodo_a_cerrar.save()
+
+            # Restaurar el estado de las planillas del periodo cerrado
+            Planilla.objects.filter(periodo=periodo_a_cerrar).update(estado='APERTURADO')
+
+            # Restaurar los campos de los contratos
+            Contrato.objects.update(
+                dias_laborados=30,
+                leyenda_permanente='',
+            )
+
+            return "Reversión completada exitosamente."
+        except Exception as e:
+            raise ValidationError(f"Error al revertir el cierre y apertura de periodo: {str(e)}")   ```
+
+**Ruta: /Volumes/Datos/Trabajo/Sistemas/Planilla/backend/planillas/apps/procesos/periodo_normal/calcular_planilla_remuneraciones.py**
+```python
+from django.db import transaction
+from decimal import Decimal
+from apps.configuracion.models import Periodo, Transaccion, ComisionAfp
+from apps.planillas.models import Contrato, Planilla
+from apps.transacciones.models import TransaccionContrato
+
+
+class CalcularPlanillaRemuneraciones:
+    @staticmethod
+    @transaction.atomic
+    def calcular(planilla_id):
+        planilla = Planilla.objects.get(id=planilla_id)
+
+        try:
+            periodo_actual = Periodo.objects.get(estado=True)
+        except Periodo.DoesNotExist:
+            raise ValueError("No hay un periodo activo para procesar las planillas.")
+
+        contratos = Contrato.objects.filter(
+            clase_planilla=planilla.clase_planilla,
+            fuente_financiamiento=planilla.fuente_financiamiento,
+            trabajador__estado=True
+        ).exclude(situacion__nombre_situacion__in=['Suspendido', 'Baja'])
+
+        for contrato in contratos:
+            sueldo_proporcional = (contrato.sueldo * Decimal(contrato.dias_laborados)) / Decimal('30')
+
+            transacciones = {
+                'remuneracion': Transaccion.objects.get(id=1),
+                'onp': Transaccion.objects.get(id=6),
+                'afp': Transaccion.objects.get(id=3),
+            }
+
+            CalcularPlanillaRemuneraciones.registrar_transaccion(contrato, transacciones['remuneracion'], sueldo_proporcional, periodo_actual.periodo)
+
+            regimen_pensionario = contrato.trabajador.regimen_pensionario.codigo_regimen_pensionario
+
+            if regimen_pensionario == '02':  # ONP
+                monto_descuento = sueldo_proporcional * Decimal('0.13')
+                CalcularPlanillaRemuneraciones.registrar_transaccion(contrato, transacciones['onp'], monto_descuento, periodo_actual.periodo)
+            elif regimen_pensionario == '03':  # AFP
+                try:
+                    comision_afp = ComisionAfp.objects.get(afp=contrato.trabajador.afp, periodo=periodo_actual)
+                    monto_descuento = sueldo_proporcional * (comision_afp.total_comision / Decimal('100'))
+                    CalcularPlanillaRemuneraciones.registrar_transaccion(contrato, transacciones['afp'], monto_descuento, periodo_actual.periodo)
+                except ComisionAfp.DoesNotExist:
+                    print(f"No se encontró comisión AFP para {contrato.trabajador.afp} en el periodo {periodo_actual.periodo}")
+
+        planilla.total_haberes = sum(t.monto for t in TransaccionContrato.objects.filter(
+            contrato__in=contratos,
+            transaccion__tipo_transaccion='HABER',
+            periodo_inicial=periodo_actual.periodo
+        ))
+        planilla.total_descuentos = sum(t.monto for t in TransaccionContrato.objects.filter(
+            contrato__in=contratos,
+            transaccion__tipo_transaccion='DESCUENTO',
+            periodo_inicial=periodo_actual.periodo
+        ))
+        planilla.total_aportes = sum(t.monto for t in TransaccionContrato.objects.filter(
+            contrato__in=contratos,
+            transaccion__tipo_transaccion='APORTE',
+            periodo_inicial=periodo_actual.periodo
+        ))
+        planilla.save()
+
+    @staticmethod
+    def registrar_transaccion(contrato, transaccion, monto, periodo):
+        TransaccionContrato.objects.update_or_create(
+            contrato=contrato,
+            transaccion=transaccion,
+            periodo_inicial=periodo,
+            periodo_final=periodo,
+            defaults={
+                'monto': monto,
+                'estado': True
+            }
+        )
+        
+    @staticmethod
+    @transaction.atomic
+    def revertir_calculo(planilla_id):
+        planilla = Planilla.objects.get(id=planilla_id)
+        periodo_actual = Periodo.objects.get(estado=True)
+
+        # Obtener contratos asociados a esta planilla
+        contratos = Contrato.objects.filter(
+            clase_planilla=planilla.clase_planilla,
+            fuente_financiamiento=planilla.fuente_financiamiento,
+            trabajador__estado=True
+        ).exclude(situacion__nombre_situacion__in=['Suspendido', 'Baja'])
+
+        # Eliminar transacciones relacionadas con estos contratos y el periodo actual
+        TransaccionContrato.objects.filter(
+            contrato__in=contratos,
+            periodo_inicial=periodo_actual.periodo
+        ).delete()
+
+        # Restaurar los valores originales de la planilla (esto asume que tienes una forma de obtener los valores originales)
+        planilla.total_haberes = 0
+        planilla.total_descuentos = 0
+        planilla.total_aportes = 0
+        planilla.save()
+```
+
+**Ruta: /Volumes/Datos/Trabajo/Sistemas/Planilla/backend/planillas/apps/procesos/periodo_adicional/__init__.py**
+```python
 ```
 
 **Ruta: /Volumes/Datos/Trabajo/Sistemas/Planilla/backend/planillas/apps/procesos/management/commands/generar_boletas.py**
-```Python
+```python
 from django.core.management.base import BaseCommand
 from apps.procesos.utils import generar_boletas_para_planilla
 from apps.planillas.models import Planilla
@@ -575,14 +1291,14 @@ class Command(BaseCommand):
 ```
 
 **Ruta: /Volumes/Datos/Trabajo/Sistemas/Planilla/backend/planillas/apps/reportes/models.py**
-```Python
+```python
 from django.db import models
 
 # Create your models here.
 ```
 
 **Ruta: /Volumes/Datos/Trabajo/Sistemas/Planilla/backend/planillas/apps/reportes/serializers.py**
-```Python
+```python
 # apps/reportes/serializers.py
 from rest_framework import serializers
 from apps.trabajadores.models import Trabajador
@@ -624,11 +1340,11 @@ class PlanillaBeneficiarioSerializer(serializers.ModelSerializer):
         ref_name = 'PlanillaBeneficiarioSerializerReportes'```
 
 **Ruta: /Volumes/Datos/Trabajo/Sistemas/Planilla/backend/planillas/apps/reportes/__init__.py**
-```Python
+```python
 ```
 
 **Ruta: /Volumes/Datos/Trabajo/Sistemas/Planilla/backend/planillas/apps/reportes/apps.py**
-```Python
+```python
 from django.apps import AppConfig
 
 
@@ -638,7 +1354,7 @@ class ReportesConfig(AppConfig):
 ```
 
 **Ruta: /Volumes/Datos/Trabajo/Sistemas/Planilla/backend/planillas/apps/reportes/admin.py**
-```Python
+```python
 # apps/reportes/admin.py
 from django.contrib import admin
 from apps.trabajadores.models import Trabajador
@@ -646,14 +1362,14 @@ from apps.planillas.models import Contrato
 ```
 
 **Ruta: /Volumes/Datos/Trabajo/Sistemas/Planilla/backend/planillas/apps/reportes/tests.py**
-```Python
+```python
 from django.test import TestCase
 
 # Create your tests here.
 ```
 
 **Ruta: /Volumes/Datos/Trabajo/Sistemas/Planilla/backend/planillas/apps/reportes/urls.py**
-```Python
+```python
 # apps/reportes/urls.py
 from rest_framework.routers import DefaultRouter
 from .views import (
@@ -673,7 +1389,7 @@ urlpatterns = router.urls
 ```
 
 **Ruta: /Volumes/Datos/Trabajo/Sistemas/Planilla/backend/planillas/apps/reportes/views.py**
-```Python
+```python
 # apps/reportes/views.py
 from rest_framework import viewsets
 from rest_framework.response import Response
@@ -689,7 +1405,16 @@ class ReporteRemuneracionActivosViewSet(viewsets.ReadOnlyModelViewSet):
     def get_queryset(self):
         if getattr(self, 'swagger_fake_view', False):
             return Trabajador.objects.none()
-        return Trabajador.objects.filter(contratos__situacion__codigo='HAB').distinct()
+        
+        user = self.request.user
+        queryset = Trabajador.objects.filter(contratos__situacion__codigo='HAB')\
+            .select_related('persona', 'ugel', 'regimen_pensionario', 'afp')\
+            .prefetch_related('contratos', 'contratos__transacciones')
+        
+        if user.role != 'admin_sistema':
+            queryset = queryset.filter(ugel=user.ugel)
+        
+        return queryset.distinct()
 
 class ReportePlanillaBeneficiariosViewSet(viewsets.ReadOnlyModelViewSet):
     serializer_class = PlanillaBeneficiarioSerializer
@@ -742,11 +1467,13 @@ class ReporteTrabajadoresPorVinculoViewSet(viewsets.ReadOnlyModelViewSet):
 ```
 
 **Ruta: /Volumes/Datos/Trabajo/Sistemas/Planilla/backend/planillas/apps/configuracion/models.py**
-```Python
+```python
 # apps/configuracion/models.py
 from django.db import models
 from django.core.exceptions import ValidationError
 from django.utils.translation import gettext_lazy as _
+from django.utils import timezone
+from auditlog.registry import auditlog
 
 class TipoDocumento(models.Model):
     codigo_tipo_documento = models.CharField(max_length=2, unique=True, verbose_name='Código')
@@ -827,47 +1554,29 @@ class Ugel(models.Model):
         ordering = ['nombre_ugel']
         verbose_name = 'UGEL'
         verbose_name_plural = 'UGELs'
+        indexes = [
+            models.Index(fields=['codigo_ugel'], name='idx_ugel_codigo'),
+        ]
 
 
 class Periodo(models.Model):
-    mes = models.CharField(max_length=2, blank=True, verbose_name='Mes')
-    anio = models.CharField(max_length=4, blank=True, verbose_name='Año')
     periodo = models.CharField(max_length=6, unique=True, blank=True, verbose_name='Periodo', editable=False)
     es_adicional = models.BooleanField(default=False, verbose_name='¿Es adicional?')
-    periodo_actual = models.CharField(max_length=6, blank=True, verbose_name='Periodo Actual', editable=False, null=True, default=None)
     estado = models.BooleanField(default=True, verbose_name='Activo')
     created = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)
 
     def __str__(self):
-        return f'{self.periodo} - {self.mes}/{self.anio}'
-
-    def clean(self):
-        if not self.periodo:
-            self.periodo = f'{self.anio}{self.mes}'
-        if not self.es_adicional and Periodo.objects.filter(mes=self.mes, anio=self.anio, es_adicional=False).exists():
-            raise ValidationError('Ya existe un período principal para este mes y año.')
-
-    def save(self, *args, **kwargs):
-        self.clean()
-        if not self.periodo:
-            self.periodo = f'{self.anio}{self.mes}'
-
-        if not self.es_adicional:
-            last_principal_periodo = Periodo.objects.filter(
-                es_adicional=False).order_by('-id').first()
-            self.periodo_actual = last_principal_periodo.periodo if last_principal_periodo else None
-
-        if not self.es_adicional and Periodo.objects.filter(mes=self.mes, anio=self.anio, es_adicional=False).exists():
-            raise ValidationError('Ya existe un período principal para este mes y año.')
-
-        super().save(*args, **kwargs)
+        return f'{self.periodo} - {self.estado}'
 
     class Meta:
         db_table = 'periodo'
-        ordering = ['anio', 'mes']
+        ordering = ['periodo', 'es_adicional']
         verbose_name = 'Período'
         verbose_name_plural = 'Períodos'
+        indexes = [
+            models.Index(fields=['periodo', 'estado'], name='idx_periodo_estado'),
+        ]
 
 
 class TipoPlanilla(models.Model):
@@ -962,6 +1671,10 @@ class Transaccion(models.Model):
         ordering = ['descripcion_transaccion']
         verbose_name = 'Transacción'
         verbose_name_plural = 'Transacciones'
+        indexes = [
+            models.Index(fields=['codigo_transaccion_mcpp'], name='idx_transaccion_codigo_mcpp'),
+            models.Index(fields=['tipo_transaccion'], name='idx_transaccion_tipo'),
+        ]
 
 
 class Cargo(models.Model):
@@ -1120,24 +1833,86 @@ class ComisionAfp(models.Model):
     prima_seguro = models.DecimalField(max_digits=8, decimal_places=2, verbose_name='Prima de Seguro')
     aporte_obligatorio = models.DecimalField(max_digits=8, decimal_places=2, verbose_name='Aporte Obligatorio')
     total_comision = models.DecimalField(max_digits=8, decimal_places=2, verbose_name='Total Comisión')
+    estado = models.BooleanField(default=True, verbose_name='Activo')
     created = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)
-    
+
     def __str__(self):
         return self.afp.nombre_afp + ' - ' + self.periodo.periodo + ' - ' + str(self.total_comision)
+
+    def save(self, *args, **kwargs):
+        # Calcular el total_comision
+        self.total_comision = self.comision_flujo + self.comision_mixta + self.prima_seguro + self.aporte_obligatorio
+        # Llamar al método save de la superclase
+        super().save(*args, **kwargs)
 
     class Meta:
         db_table = 'comision_afp'
         ordering = ['periodo']
         verbose_name = 'Comisión AFP'
         verbose_name_plural = 'Comisiones AFP'
-```
+        indexes = [
+            models.Index(fields=['periodo', 'afp'], name='idx_comisionafp_periodo_afp'),
+        ]
+
+
+class ConfiguracionGlobal(models.Model):
+    clave = models.CharField(max_length=50, unique=True)
+    descripcion = models.TextField()
+    tipo_dato = models.CharField(max_length=20, choices=[
+        ('NUMERIC', 'Numérico'),
+        ('TEXT', 'Texto'),
+        ('JSON', 'JSON'),
+        ('BOOLEAN', 'Booleano'),
+        ('DATE', 'Fecha'),
+    ])
+
+    def __str__(self):
+        return self.clave
+
+class ValorConfiguracionGlobal(models.Model):
+    configuracion = models.ForeignKey(ConfiguracionGlobal, on_delete=models.CASCADE, related_name='valores')
+    valor = models.TextField()
+    norma = models.CharField(max_length=100, null=True, blank=True)
+    fecha_inicio = models.DateField()
+    fecha_fin = models.DateField(null=True, blank=True)
+    creado_por = models.ForeignKey('usuarios.User', on_delete=models.SET_NULL, null=True)
+    fecha_creacion = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-fecha_inicio']
+
+    def __str__(self):
+        return f"{self.configuracion.clave}: {self.valor} (desde {self.fecha_inicio})"
+
+    def save(self, *args, **kwargs):
+        # Si es un nuevo registro (no tiene ID), cerrar el valor anterior
+        if not self.pk:
+            ValorConfiguracionGlobal.objects.filter(
+                configuracion=self.configuracion,
+                fecha_fin__isnull=True
+            ).update(fecha_fin=self.fecha_inicio - timezone.timedelta(days=1))
+
+        super().save(*args, **kwargs)
+
+
+auditlog.register(Ugel)
+auditlog.register(ComisionAfp)
+auditlog.register(Cargo)
+auditlog.register(Periodo)
+auditlog.register(TipoPlanilla)
+auditlog.register(ClasePlanilla)
+auditlog.register(FuenteFinanciamiento)
+auditlog.register(Transaccion)
+auditlog.register(Banco)
+auditlog.register(ConfiguracionGlobal)
+auditlog.register(ValorConfiguracionGlobal)```
 
 **Ruta: /Volumes/Datos/Trabajo/Sistemas/Planilla/backend/planillas/apps/configuracion/serializers.py**
-```Python
+```python
 # apps/configuracion/serializers.py
 from rest_framework import serializers
-from .models import Ugel, TipoPlanilla, ClasePlanilla, FuenteFinanciamiento, Periodo, Transaccion, Cargo, RegimenLaboral, TipoServidor, RegimenPensionario, Afp, Banco, Situacion, TipoDocumento, Sexo, TipoDescuento, TipoBeneficiario, EstadoCivil, ComisionAfp
+from .models import Ugel, TipoPlanilla, ClasePlanilla, FuenteFinanciamiento, Periodo, Transaccion, Cargo, RegimenLaboral, TipoServidor, RegimenPensionario, Afp, Banco, Situacion, TipoDocumento, Sexo, TipoDescuento, TipoBeneficiario, EstadoCivil, ComisionAfp, ConfiguracionGlobal, ValorConfiguracionGlobal
 
 class UgelSerializer(serializers.ModelSerializer):
     class Meta:
@@ -1145,10 +1920,30 @@ class UgelSerializer(serializers.ModelSerializer):
         fields = ['id', 'nombre_ugel', 'nombre_corto_ugel']
         ref_name = 'UgelSerializerConfiguracion'
 
+    def validate_codigo_ugel(self, value):
+        if not value.isdigit() or len(value) != 3:
+            raise serializers.ValidationError("El código de UGEL debe ser un número de 3 dígitos.")
+        return value
+
+    def validate_nombre_ugel(self, value):
+        if len(value) < 5:
+            raise serializers.ValidationError("El nombre de la UGEL debe tener al menos 5 caracteres.")
+        return value
+
 class PeriodoSerializer(serializers.ModelSerializer):
     class Meta:
         model = Periodo
         fields = '__all__'
+
+    def validate_periodo(self, value):
+        if not value.isdigit() or len(value) != 6:
+            raise serializers.ValidationError("El periodo debe ser un número de 6 dígitos (YYYYMM).")
+        return value
+
+    def validate(self, data):
+        if data.get('es_adicional') and not data.get('estado'):
+            raise serializers.ValidationError("Un periodo adicional debe estar activo al crearse.")
+        return data
 
 class TipoPlanillaSerializer(serializers.ModelSerializer):
     class Meta:
@@ -1193,7 +1988,7 @@ class RegimenPensionarioSerializer(serializers.ModelSerializer):
         model = RegimenPensionario
         fields = '__all__'
 
-class AFPSerializer(serializers.ModelSerializer):
+class AfpSerializer(serializers.ModelSerializer):
     class Meta:
         model = Afp
         fields = '__all__'
@@ -1236,14 +2031,24 @@ class EstadoCivilSerializer(serializers.ModelSerializer):
 class ComisionAfpSerializer(serializers.ModelSerializer):
     class Meta:
         model = ComisionAfp
+        fields = '__all__'
+
+class ConfiguracionGlobalSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ConfiguracionGlobal
+        fields = '__all__'
+
+class ValorConfiguracionGlobalSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ValorConfiguracionGlobal
         fields = '__all__'```
 
 **Ruta: /Volumes/Datos/Trabajo/Sistemas/Planilla/backend/planillas/apps/configuracion/__init__.py**
-```Python
+```python
 ```
 
 **Ruta: /Volumes/Datos/Trabajo/Sistemas/Planilla/backend/planillas/apps/configuracion/apps.py**
-```Python
+```python
 from django.apps import AppConfig
 
 
@@ -1253,9 +2058,9 @@ class ConfiguracionConfig(AppConfig):
 ```
 
 **Ruta: /Volumes/Datos/Trabajo/Sistemas/Planilla/backend/planillas/apps/configuracion/admin.py**
-```Python
+```python
 from django.contrib import admin
-from .models import Ugel, TipoPlanilla, ClasePlanilla, FuenteFinanciamiento, Periodo, Transaccion, Cargo, RegimenLaboral, TipoServidor, RegimenPensionario, Afp, Banco, Situacion, TipoDocumento, Sexo, EstadoCivil, ComisionAfp
+from .models import Ugel, TipoPlanilla, ClasePlanilla, FuenteFinanciamiento, Periodo, Transaccion, Cargo, RegimenLaboral, TipoServidor, RegimenPensionario, Afp, Banco, Situacion, TipoDocumento, Sexo, EstadoCivil, ComisionAfp, ConfiguracionGlobal, ValorConfiguracionGlobal
 from apps.transacciones.models import TransaccionContrato
 
 # Register your models here.
@@ -1267,10 +2072,10 @@ class UgelAdmin(admin.ModelAdmin):
 
 @admin.register(Periodo)
 class PeriodoAdmin(admin.ModelAdmin):
-    list_display = ('periodo', 'mes', 'anio', 'es_adicional', 'periodo_actual')
-    search_fields = ('mes', 'anio', 'periodo')
+    list_display = ('periodo', 'es_adicional', 'estado')
+    search_fields = ('periodo',)
     list_filter = ('es_adicional',)
-    ordering = ('anio', 'mes')
+    ordering = ('periodo', 'es_adicional')
 
 
 @admin.register(TipoPlanilla)
@@ -1369,20 +2174,33 @@ class EstadoCivilAdmin(admin.ModelAdmin):
 
 @admin.register(ComisionAfp)
 class ComisionAfpAdmin(admin.ModelAdmin):
-    list_display = ('periodo', 'afp', 'total_comision' )
+    list_display = ('periodo', 'afp', 'total_comision', 'estado')
     search_fields = ('periodo', 'afp')
-    list_filter = ('afp',)
-    ordering = ('periodo', 'afp')```
+    list_filter = ('afp','estado')
+    ordering = ('periodo', 'afp')
+
+@admin.register(ConfiguracionGlobal)
+class ConfiguracionGlobalAdmin(admin.ModelAdmin):
+    list_display = ('clave', 'descripcion')
+    search_fields = ('clave', 'descripcion')
+    ordering = ('clave',)
+
+@admin.register(ValorConfiguracionGlobal)
+class ValorConfiguracionGlobalAdmin(admin.ModelAdmin):
+    list_display = ('configuracion', 'valor', 'fecha_inicio', 'fecha_fin')
+    search_fields = ('configuracion', 'valor')
+    list_filter = ('configuracion',)
+    ordering = ('configuracion', 'fecha_inicio', 'fecha_fin')```
 
 **Ruta: /Volumes/Datos/Trabajo/Sistemas/Planilla/backend/planillas/apps/configuracion/tests.py**
-```Python
+```python
 from django.test import TestCase
 
 # Create your tests here.
 ```
 
 **Ruta: /Volumes/Datos/Trabajo/Sistemas/Planilla/backend/planillas/apps/configuracion/urls.py**
-```Python
+```python
 # apps/configuracion/urls.py
 from rest_framework.routers import DefaultRouter
 from .views import UgelViewSet, TipoPlanillaViewSet, ClasePlanillaViewSet, FuenteFinanciamientoViewSet, PeriodoViewSet, TransaccionViewSet, CargoViewSet, RegimenLaboralViewSet, TipoServidorViewSet, RegimenPensionarioViewSet, AFPViewSet, BancoViewSet, SituacionViewSet, TipoDocumentoViewSet, SexoViewSet, TipoDescuentoViewSet, TipoBeneficiarioViewSet, EstadoCivilViewSet, ComisionAfpViewSet
@@ -1412,12 +2230,16 @@ urlpatterns = router.urls
 ```
 
 **Ruta: /Volumes/Datos/Trabajo/Sistemas/Planilla/backend/planillas/apps/configuracion/views.py**
-```Python
+```python
 from django.shortcuts import render
 from rest_framework import viewsets
-from .models import Ugel, TipoPlanilla, ClasePlanilla, FuenteFinanciamiento, Periodo, Transaccion, Cargo, RegimenLaboral, TipoServidor, RegimenPensionario, Afp, Banco, Situacion, TipoDocumento, Sexo, TipoDescuento, TipoBeneficiario, EstadoCivil, ComisionAfp
-from .serializers import UgelSerializer, TipoPlanillaSerializer, ClasePlanillaSerializer, FuenteFinanciamientoSerializer, PeriodoSerializer, TransaccionSerializer, CargoSerializer, RegimenLaboralSerializer, TipoServidorSerializer, RegimenPensionarioSerializer, AFPSerializer, BancoSerializer, SituacionSerializer, TipoDocumentoSerializer, SexoSerializer, TipoDescuentoSerializer, TipoBeneficiarioSerializer, EstadoCivilSerializer, ComisionAfpSerializer
+from .models import Ugel, TipoPlanilla, ClasePlanilla, FuenteFinanciamiento, Periodo, Transaccion, Cargo, RegimenLaboral, TipoServidor, RegimenPensionario, Afp, Banco, Situacion, TipoDocumento, Sexo, TipoDescuento, TipoBeneficiario, EstadoCivil, ComisionAfp, ConfiguracionGlobal, ValorConfiguracionGlobal
+from .serializers import UgelSerializer, TipoPlanillaSerializer, ClasePlanillaSerializer, FuenteFinanciamientoSerializer, PeriodoSerializer, TransaccionSerializer, CargoSerializer, RegimenLaboralSerializer, TipoServidorSerializer, RegimenPensionarioSerializer, AfpSerializer, BancoSerializer, SituacionSerializer, TipoDocumentoSerializer, SexoSerializer, TipoDescuentoSerializer, TipoBeneficiarioSerializer, EstadoCivilSerializer, ComisionAfpSerializer, ConfiguracionGlobalSerializer, ValorConfiguracionGlobalSerializer
 from rest_framework.permissions import IsAuthenticated
+
+from django.utils.decorators import method_decorator
+from django.views.decorators.cache import cache_page
+
 
 # Create your views here.
 class UgelViewSet(viewsets.ModelViewSet):
@@ -1425,10 +2247,19 @@ class UgelViewSet(viewsets.ModelViewSet):
     serializer_class = UgelSerializer
     permission_classes = [IsAuthenticated]
 
+    def get_queryset(self):
+        user = self.request.user
+        if user.role == 'admin_sistema':
+            return self.queryset
+        return self.queryset.filter(id=user.ugel.id)
+
 class PeriodoViewSet(viewsets.ModelViewSet):
     queryset = Periodo.objects.all()
     serializer_class = PeriodoSerializer
     permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        return self.queryset.order_by('-periodo')
 
 class TipoPlanillaViewSet(viewsets.ModelViewSet):
     queryset = TipoPlanilla.objects.all()
@@ -1472,7 +2303,7 @@ class RegimenPensionarioViewSet(viewsets.ModelViewSet):
 
 class AFPViewSet(viewsets.ModelViewSet):
     queryset = Afp.objects.all()
-    serializer_class = AFPSerializer
+    serializer_class = AfpSerializer
     permission_classes = [IsAuthenticated]
 
 class BancoViewSet(viewsets.ModelViewSet):
@@ -1513,16 +2344,41 @@ class EstadoCivilViewSet(viewsets.ModelViewSet):
 class ComisionAfpViewSet(viewsets.ModelViewSet):
     queryset = ComisionAfp.objects.all()
     serializer_class = ComisionAfpSerializer
-    permission_classes = [IsAuthenticated]```
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        return self.queryset.select_related('periodo', 'afp').order_by('-periodo__periodo', 'afp__nombre_afp')
+
+class ConfiguracionGlobalViewSet(viewsets.ModelViewSet):
+    queryset = ConfiguracionGlobal.objects.all()
+    serializer_class = ConfiguracionGlobalSerializer
+    permission_classes = [IsAuthenticated]
+
+    @method_decorator(cache_page(60 * 15))  # Cache por 15 minutos
+    def list(self, request, *args, **kwargs):
+        return super().list(request, *args, **kwargs)
+
+    def get_queryset(self):
+        return self.queryset.order_by('clave')
+
+class ValorConfiguracionGlobalViewSet(viewsets.ModelViewSet):
+    queryset = ValorConfiguracionGlobal.objects.all()
+    serializer_class = ValorConfiguracionGlobalSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        return self.queryset.select_related('configuracion').order_by('configuracion__clave', '-fecha_inicio', '-fecha_fin')```
 
 **Ruta: /Volumes/Datos/Trabajo/Sistemas/Planilla/backend/planillas/apps/usuarios/models.py**
-```Python
+```python
 # apps/usuarios/models.py
 from django.db import models
 from django.core.exceptions import ValidationError
 from django.utils.translation import gettext_lazy as _
 from apps.configuracion.models import TipoDocumento, Sexo, TipoDescuento, TipoBeneficiario, Ugel, EstadoCivil
 from django.contrib.auth.models import AbstractUser
+
+from auditlog.registry import auditlog
 
 class User(AbstractUser):
     ADMINISTRADOR_DEL_SISTEMA = 'admin_sistema'
@@ -1562,6 +2418,11 @@ class User(AbstractUser):
         help_text='Permisos específicos para este usuario.',
         verbose_name='permisos de usuario',
     )
+    class Meta:
+        indexes = [
+            models.Index(fields=['role'], name='idx_user_role'),
+            models.Index(fields=['ugel'], name='idx_user_ugel'),
+        ]
 
 
 class Persona(models.Model):
@@ -1602,6 +2463,10 @@ class Persona(models.Model):
         ordering = ['apellido_paterno', 'apellido_materno', 'nombres']
         verbose_name = 'Persona'
         verbose_name_plural = 'Personas'
+        indexes = [
+            models.Index(fields=['numero_documento'], name='idx_persona_documento'),
+            models.Index(fields=['apellido_paterno', 'apellido_materno', 'nombres'], name='idx_persona_nombre_completo'),
+        ]
 
 
 class Beneficiario(models.Model):
@@ -1617,9 +2482,7 @@ class Beneficiario(models.Model):
     documento_descuento = models.CharField(
         max_length=45, blank=True, verbose_name='Documento de Descuento'
     )
-    numero_cuenta = models.CharField(
-        max_length=20, blank=True, verbose_name='Número de Cuenta'
-    )
+    numero_cuenta = models.CharField(max_length=20, blank=True, verbose_name='Número de Cuenta')
     tipo_beneficiario = models.ForeignKey(TipoBeneficiario, on_delete=models.CASCADE, default=1, verbose_name='Tipo de Beneficiario')
     tipo_descuento = models.ForeignKey(TipoDescuento, on_delete=models.CASCADE, default=1, verbose_name='Tipo de Descuento')
     descuento_fijo = models.DecimalField(
@@ -1651,6 +2514,10 @@ class Beneficiario(models.Model):
         ordering = ['id']
         verbose_name = 'Beneficiario'
         verbose_name_plural = 'Beneficiarios'
+        indexes = [
+            models.Index(fields=['trabajador'], name='idx_beneficiario_trabajador'),
+            models.Index(fields=['estado'], name='idx_beneficiario_estado'),
+        ]
 
     def clean(self):
         if self.tipo_descuento.codigo == 'MF' and not self.descuento_fijo:
@@ -1660,43 +2527,100 @@ class Beneficiario(models.Model):
 
     def save(self, *args, **kwargs):
         self.clean()
-        super().save(*args, **kwargs)```
+        super().save(*args, **kwargs)
+
+
+auditlog.register(User)
+auditlog.register(Persona)
+auditlog.register(Beneficiario)```
 
 **Ruta: /Volumes/Datos/Trabajo/Sistemas/Planilla/backend/planillas/apps/usuarios/serializers.py**
-```Python
+```python
 # apps/usuarios/serializers.py
 from rest_framework import serializers
 from .models import Persona, Beneficiario, User
 from apps.configuracion.models import Ugel
+from django.core.validators import validate_email
+from django.core.exceptions import ValidationError
 
 class UgelSerializer(serializers.ModelSerializer):
     class Meta:
         model = Ugel
         fields = ['id', 'nombre_ugel', 'nombre_corto_ugel']
 
+class PersonaSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Persona
+        fields = [
+            'id', 'user', 'tipo_documento', 'numero_documento', 'apellido_paterno', 
+            'apellido_materno', 'nombres', 'fecha_nacimiento', 'sexo', 'estado_civil', 
+            'direccion', 'email', 'telefono'
+        ]
+
+    def validate_numero_documento(self, value):
+        tipo_documento = self.initial_data.get('tipo_documento')
+        if tipo_documento == 'DNI' and (not value.isdigit() or len(value) != 8):
+            raise serializers.ValidationError("El DNI debe ser un número de 8 dígitos.")
+        return value
+
+    def validate_email(self, value):
+        try:
+            validate_email(value)
+        except ValidationError:
+            raise serializers.ValidationError("Ingrese una dirección de correo electrónico válida.")
+        return value
+
+    def validate(self, data):
+        if data.get('fecha_nacimiento'):
+            from datetime import date
+            today = date.today()
+            age = today.year - data['fecha_nacimiento'].year - ((today.month, today.day) < (data['fecha_nacimiento'].month, data['fecha_nacimiento'].day))
+            if age < 18:
+                raise serializers.ValidationError("La persona debe ser mayor de 18 años.")
+        return data
+    
 class UserSerializer(serializers.ModelSerializer):
+    # persona = PersonaSerializer(read_only=True)
     ugel = UgelSerializer(read_only=True)
 
     class Meta:
         model = User
         fields = ['id', 'username', 'email', 'role', 'is_active', 'date_joined', 'ugel']
 
-class PersonaSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Persona
-        fields = ['id', 'user', 'tipo_documento', 'numero_documento', 'apellido_paterno', 'apellido_materno', 'nombres', 'fecha_nacimiento', 'sexo', 'direccion', 'email']
+    def validate_username(self, value):
+        if len(value) < 5:
+            raise serializers.ValidationError("El nombre de usuario debe tener al menos 5 caracteres.")
+        return value
 
+    def validate(self, data):
+        if data.get('role') == 'admin_ugel' and not data.get('ugel'):
+            raise serializers.ValidationError("Un administrador UGEL debe tener una UGEL asignada.")
+        return data
 class BeneficiarioSerializer(serializers.ModelSerializer):
     class Meta:
         model = Beneficiario
-        fields = ['id', 'trabajador', 'persona', 'relacion_trabajador', 'documento_descuento', 'numero_cuenta', 'tipo_beneficiario', 'tipo_descuento', 'descuento_fijo', 'porcentaje_descuento', 'fecha_inicio', 'fecha_fin', 'estado', 'banco', 'created', 'updated']```
+        fields = ['id', 'trabajador', 'persona', 'relacion_trabajador', 'documento_descuento', 'numero_cuenta', 'tipo_beneficiario', 'tipo_descuento', 'descuento_fijo', 'porcentaje_descuento', 'fecha_inicio', 'fecha_fin', 'estado', 'banco', 'created', 'updated']
+
+    def validate_username(self, value):
+        if len(value) < 5:
+            raise serializers.ValidationError("El nombre de usuario debe tener al menos 5 caracteres.")
+        return value
+
+    def validate(self, data):
+        if data.get('role') == 'admin_ugel' and not data.get('ugel'):
+            raise serializers.ValidationError("Un administrador UGEL debe tener una UGEL asignada.")
+        return data
+
+
+from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
+```
 
 **Ruta: /Volumes/Datos/Trabajo/Sistemas/Planilla/backend/planillas/apps/usuarios/__init__.py**
-```Python
+```python
 ```
 
 **Ruta: /Volumes/Datos/Trabajo/Sistemas/Planilla/backend/planillas/apps/usuarios/apps.py**
-```Python
+```python
 from django.apps import AppConfig
 
 
@@ -1705,7 +2629,7 @@ class UsuariosConfig(AppConfig):
     name = 'apps.usuarios'```
 
 **Ruta: /Volumes/Datos/Trabajo/Sistemas/Planilla/backend/planillas/apps/usuarios/admin.py**
-```Python
+```python
 # apps/usuarios/admin.py
 from django.contrib import admin
 from .models import Persona, Beneficiario, User, Ugel
@@ -1756,19 +2680,20 @@ class BeneficiarioAdmin(admin.ModelAdmin):
     ordering = ['persona', 'trabajador']```
 
 **Ruta: /Volumes/Datos/Trabajo/Sistemas/Planilla/backend/planillas/apps/usuarios/tests.py**
-```Python
+```python
 from django.test import TestCase
 
 # Create your tests here.
 ```
 
 **Ruta: /Volumes/Datos/Trabajo/Sistemas/Planilla/backend/planillas/apps/usuarios/urls.py**
-```Python
+```python
 # apps/usuarios/urls.py
 from rest_framework.routers import DefaultRouter
 from .views import PersonaViewSet, BeneficiarioViewSet, UserViewSet
 
 router = DefaultRouter()
+
 router.register(r'users', UserViewSet)
 router.register(r'personas', PersonaViewSet)
 router.register(r'beneficiarios', BeneficiarioViewSet)
@@ -1778,35 +2703,152 @@ urlpatterns = router.urls
 ```
 
 **Ruta: /Volumes/Datos/Trabajo/Sistemas/Planilla/backend/planillas/apps/usuarios/views.py**
-```Python
+```python
 # apps/usuarios/views.py
 from rest_framework import viewsets
 from rest_framework.permissions import IsAuthenticated
 from .models import Persona, Beneficiario, User
 from .serializers import PersonaSerializer, BeneficiarioSerializer, UserSerializer
 
+import re
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework import status
+from django.contrib.auth import authenticate
+from rest_framework.authtoken.models import Token
+from rest_framework.permissions import AllowAny
+from django.contrib.auth.password_validation import validate_password
+from django.core.exceptions import ValidationError
+from rest_framework_simplejwt.tokens import RefreshToken
+
+# apps/usuarios/views.py
+
+from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework import status
+from django.contrib.auth import authenticate
+from rest_framework.permissions import AllowAny
+
+from rest_framework.decorators import action
+
+# Vista personalizada para el login
+class CustomLoginView(APIView):
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        # Obtener el nombre de usuario y la contraseña del request
+        username = request.data.get("username")
+        password = request.data.get("password")
+
+        # Autenticar al usuario
+        user = authenticate(username=username, password=password)
+        if user is not None:
+            # Crear tokens de acceso y refresco para el usuario autenticado
+            refresh = RefreshToken.for_user(user)
+            return Response({
+                'refresh': str(refresh),  # Token de refresco
+                'access': str(refresh.access_token),  # Token de acceso
+            }, status=status.HTTP_200_OK)
+        # Retornar un error si las credenciales no son válidas
+        return Response({"error": "Invalid credentials"}, status=status.HTTP_400_BAD_REQUEST)
+
+# Vista personalizada para obtener detalles del usuario autenticado
+class CustomUserDetail(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, *args, **kwargs):
+        # Serializar y retornar los datos del usuario autenticado
+        serializer = UserSerializer(request.user)
+        return Response(serializer.data)
+
+
+
+
+class CustomLogoutView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        try:
+            request.user.auth_token.delete()
+            return Response({"message": "Sesión cerrada exitosamente"}, status=status.HTTP_200_OK)
+        except Token.DoesNotExist:
+            return Response({"error": "Token inválido"}, status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 class UserViewSet(viewsets.ModelViewSet):
     queryset = User.objects.all()
     serializer_class = UserSerializer
     permission_classes = [IsAuthenticated]
 
+    def get_queryset(self):
+        user = self.request.user
+        queryset = self.queryset.select_related('ugel')
+        if user.role != 'admin_sistema':
+            queryset = queryset.filter(ugel=user.ugel)
+        return queryset
+
 class PersonaViewSet(viewsets.ModelViewSet):
     queryset = Persona.objects.all()
     serializer_class = PersonaSerializer
     permission_classes = [IsAuthenticated]
 
+    def get_queryset(self):
+        user = self.request.user
+        queryset = self.queryset.select_related('tipo_documento', 'sexo', 'estado_civil')
+        if user.role != 'admin_sistema':
+            queryset = queryset.filter(user__ugel=user.ugel)
+        return queryset
+    
+    # @action(detail=False, methods=['get', 'put'], url_path='me')
+    # def me(self, request):
+    #     user = request.user
+    #     try:
+    #         persona = user.persona  # Asegúrate de que el usuario tenga una persona asociada
+    #     except Persona.DoesNotExist:
+    #         return Response({"detail": "Perfil no encontrado."}, status=status.HTTP_404_NOT_FOUND)
+        
+    #     if request.method == 'GET':
+    #         serializer = self.get_serializer(persona)
+    #         return Response(serializer.data)
+        
+    #     elif request.method == 'PUT':
+    #         serializer = self.get_serializer(persona, data=request.data, partial=True)
+    #         serializer.is_valid(raise_exception=True)
+    #         serializer.save()
+    #         return Response(serializer.data, status=status.HTTP_200_OK)
+
 class BeneficiarioViewSet(viewsets.ModelViewSet):
     queryset = Beneficiario.objects.all()
     serializer_class = BeneficiarioSerializer
     permission_classes = [IsAuthenticated]
-```
+
+    def get_queryset(self):
+        user = self.request.user
+        queryset = self.queryset.select_related('trabajador', 'persona', 'tipo_beneficiario', 'tipo_descuento', 'banco')
+        if user.role != 'admin_sistema':
+            queryset = queryset.filter(trabajador__ugel=user.ugel)
+        return queryset
+    
+    
+
+class ProtectedView(APIView):
+    permission_classes = [IsAuthenticated]  # Esta vista requiere autenticación
+
+    def get(self, request):
+        # Devolvemos información del usuario autenticado
+        return Response({
+            "message": "Esta es una vista protegida",
+            "user": request.user.username
+        })```
 
 **Ruta: /Volumes/Datos/Trabajo/Sistemas/Planilla/backend/planillas/apps/trabajadores/models.py**
-```Python
+```python
 # apps/trabajadores/models.py
 from django.db import models
 from apps.usuarios.models import Persona
+from auditlog.registry import auditlog
 
 class Trabajador(models.Model):
     ugel = models.ForeignKey('configuracion.Ugel', on_delete=models.CASCADE, verbose_name='UGEL')
@@ -1833,28 +2875,59 @@ class Trabajador(models.Model):
         verbose_name = 'Trabajador'
         verbose_name_plural = 'Trabajadores'
         indexes = [
-            models.Index(fields=['persona'], name='persona_idx'),
+            models.Index(fields=['persona'], name='idx_trabajador_persona'),
+            models.Index(fields=['ugel'], name='idx_trabajador_ugel'),
+            models.Index(fields=['estado'], name='idx_trabajador_estado'),
         ]
-```
+
+auditlog.register(Trabajador)```
 
 **Ruta: /Volumes/Datos/Trabajo/Sistemas/Planilla/backend/planillas/apps/trabajadores/serializers.py**
-```Python
+```python
 # apps/trabajadores/serializers.py
 from rest_framework import serializers
 from .models import Trabajador
+from apps.usuarios.serializers import PersonaSerializer
+from apps.configuracion.serializers import UgelSerializer, RegimenPensionarioSerializer, AfpSerializer, BancoSerializer
 
 class TrabajadorSerializer(serializers.ModelSerializer):
+
+    persona = PersonaSerializer(read_only=True)
+    ugel = UgelSerializer(read_only=True)
+    regimen_pensionario = RegimenPensionarioSerializer(read_only=True)
+    afp = AfpSerializer(read_only=True)
+    banco = BancoSerializer(read_only=True)
     class Meta:
         model = Trabajador
         fields = '__all__'
+
+    def validate_tiempo_servicios(self, value):
+        if value is not None and value < 0:
+            raise serializers.ValidationError("El tiempo de servicios no puede ser negativo.")
+        return value
+
+    def validate_cuspp(self, value):
+        if value and not value.isalnum():
+            raise serializers.ValidationError("El CUSPP debe contener solo letras y números.")
+        return value
+
+    def validate_numero_cuenta(self, value):
+        if value and not value.isdigit():
+            raise serializers.ValidationError("El número de cuenta debe contener solo dígitos.")
+        return value
+
+    def validate_ruc(self, value):
+        if value and (not value.isdigit() or len(value) != 11):
+            raise serializers.ValidationError("El RUC debe ser un número de 11 dígitos.")
+        return value
 ```
 
 **Ruta: /Volumes/Datos/Trabajo/Sistemas/Planilla/backend/planillas/apps/trabajadores/__init__.py**
-```Python
+```python
 ```
 
 **Ruta: /Volumes/Datos/Trabajo/Sistemas/Planilla/backend/planillas/apps/trabajadores/apps.py**
-```Python
+```python
 from django.apps import AppConfig
 
 
@@ -1864,7 +2937,7 @@ class TrabajadoresConfig(AppConfig):
 ```
 
 **Ruta: /Volumes/Datos/Trabajo/Sistemas/Planilla/backend/planillas/apps/trabajadores/admin.py**
-```Python
+```python
 # apps/trabajadores/admin.py
 from django.contrib import admin
 from .models import Trabajador
@@ -1879,14 +2952,14 @@ class TrabajadorAdmin(admin.ModelAdmin):
 ```
 
 **Ruta: /Volumes/Datos/Trabajo/Sistemas/Planilla/backend/planillas/apps/trabajadores/tests.py**
-```Python
+```python
 from django.test import TestCase
 
 # Create your tests here.
 ```
 
 **Ruta: /Volumes/Datos/Trabajo/Sistemas/Planilla/backend/planillas/apps/trabajadores/urls.py**
-```Python
+```python
 from rest_framework.routers import DefaultRouter
 from .views import (
     TrabajadorViewSet
@@ -1899,7 +2972,7 @@ urlpatterns = router.urls
 ```
 
 **Ruta: /Volumes/Datos/Trabajo/Sistemas/Planilla/backend/planillas/apps/trabajadores/views.py**
-```Python
+```python
 from rest_framework import viewsets
 from rest_framework.permissions import IsAuthenticated
 from .models import Trabajador
@@ -1912,47 +2985,57 @@ class TrabajadorViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         user = self.request.user
-        if user.role == 'admin_sistema':
-            return Trabajador.objects.all()
-        return Trabajador.objects.filter(ugel=user.ugel)
+        queryset = Trabajador.objects.select_related('persona', 'ugel', 'regimen_pensionario', 'afp', 'banco')
+        if user.role != 'admin_sistema':
+            queryset = queryset.filter(ugel=user.ugel)
+        return queryset
 
 ```
 
 **Ruta: /Volumes/Datos/Trabajo/Sistemas/Planilla/backend/planillas/apps/transacciones/models.py**
-```Python
+```python
 # apps/transacciones/models.py
 from django.core.exceptions import ValidationError
 from django.db import models
 from django.db.models import Max
 from apps.planillas.models import Contrato
 from apps.configuracion.models import Transaccion
+
+from auditlog.registry import auditlog
+
 class TransaccionContrato(models.Model):
     contrato = models.ForeignKey(Contrato, on_delete=models.CASCADE, verbose_name='Contrato', related_name='transacciones')
     transaccion = models.ForeignKey(Transaccion, on_delete=models.CASCADE, verbose_name='Transacción')
     monto = models.DecimalField(max_digits=8, decimal_places=2, null=True, blank=True, verbose_name='Monto')
     periodo_inicial = models.CharField(max_length=6, blank=True, verbose_name='Periodo Inicial')
     periodo_final = models.CharField(max_length=6, blank=True, verbose_name='Periodo Final')
-    correlativo = models.IntegerField(verbose_name='Correlativo', editable=False, null=True, blank=True)
+    secuencia = models.IntegerField(verbose_name='Correlativo', editable=False, null=True, blank=True)
     estado = models.BooleanField(verbose_name='Estado', default=True)
 
     def __str__(self):
-        return f'{self.correlativo} - {self.contrato} - {self.monto}'
+        return f'{self.secuencia} - {self.contrato} - {self.monto}'
 
     class Meta:
         db_table = 'transacciones_trabajadores'
         verbose_name = 'Transacción del Trabajador'
         verbose_name_plural = 'Transacciones de los Trabajadores'
-        ordering = ['transaccion', 'correlativo']
+        ordering = ['transaccion', 'secuencia']
+        indexes = [
+            models.Index(fields=['contrato', 'transaccion'], name='idx_transac_contrato_transac'),
+            models.Index(fields=['periodo_inicial', 'periodo_final'], name='idx_transac_contrato_periodo'),
+        ]
 
     def save(self, *args, **kwargs):
         if not self.pk:
-            ultimo_correlativo = TransaccionContrato.objects.filter(transaccion=self.transaccion).aggregate(Max('correlativo'))['correlativo__max']
-            self.correlativo = (ultimo_correlativo or 0) + 1
+            ultimo_secuencia = TransaccionContrato.objects.filter(transaccion=self.transaccion).aggregate(Max('secuencia'))['secuencia__max']
+            self.secuencia = (ultimo_secuencia or 0) + 1
         super().save(*args, **kwargs)
-```
+
+
+auditlog.register(TransaccionContrato)```
 
 **Ruta: /Volumes/Datos/Trabajo/Sistemas/Planilla/backend/planillas/apps/transacciones/serializers.py**
-```Python
+```python
 # apps/transacciones/serializers.py
 from rest_framework import serializers
 from .models import TransaccionContrato
@@ -1962,14 +3045,20 @@ class TransaccionTrabajadorSerializer(serializers.ModelSerializer):
         model = TransaccionContrato
         fields = '__all__'
         ref_name = 'TransaccionTrabajadorSerializerTransacciones'
-```
+
+    def validate(self, data):
+        if data['periodo_final'] < data['periodo_inicial']:
+            raise serializers.ValidationError("El periodo final no puede ser anterior al periodo inicial.")
+        if data['monto'] < 0:
+            raise serializers.ValidationError("El monto no puede ser negativo.")
+        return data```
 
 **Ruta: /Volumes/Datos/Trabajo/Sistemas/Planilla/backend/planillas/apps/transacciones/__init__.py**
-```Python
+```python
 ```
 
 **Ruta: /Volumes/Datos/Trabajo/Sistemas/Planilla/backend/planillas/apps/transacciones/apps.py**
-```Python
+```python
 from django.apps import AppConfig
 
 
@@ -1979,14 +3068,14 @@ class TransaccionesConfig(AppConfig):
 ```
 
 **Ruta: /Volumes/Datos/Trabajo/Sistemas/Planilla/backend/planillas/apps/transacciones/admin.py**
-```Python
+```python
 # apps/transacciones/admin.py
 from django.contrib import admin
 from .models import TransaccionContrato
 
 @admin.register(TransaccionContrato)
 class TransaccionTrabajadorAdmin(admin.ModelAdmin):
-    list_display = ('contrato', 'transaccion', 'monto', 'periodo_inicial', 'periodo_final', 'correlativo','estado')
+    list_display = ('contrato', 'transaccion', 'monto', 'periodo_inicial', 'periodo_final', 'secuencia','estado')
     search_fields = (
         'contrato__trabajador__persona__nombres',
         'contrato__trabajador__persona__apellido_paterno',
@@ -1994,19 +3083,19 @@ class TransaccionTrabajadorAdmin(admin.ModelAdmin):
         'transaccion__descripcion_transaccion'
     )
     list_filter = ('estado', 'transaccion__tipo_transaccion')
-    ordering = ('transaccion', 'correlativo')
+    ordering = ('transaccion', 'secuencia')
     autocomplete_fields = ['contrato', 'transaccion']
 ```
 
 **Ruta: /Volumes/Datos/Trabajo/Sistemas/Planilla/backend/planillas/apps/transacciones/tests.py**
-```Python
+```python
 from django.test import TestCase
 
 # Create your tests here.
 ```
 
 **Ruta: /Volumes/Datos/Trabajo/Sistemas/Planilla/backend/planillas/apps/transacciones/urls.py**
-```Python
+```python
 # apps/transacciones/urls.py
 from rest_framework.routers import DefaultRouter
 from .views import  TransaccionTrabajadorViewSet
@@ -2018,7 +3107,7 @@ urlpatterns = router.urls
 ```
 
 **Ruta: /Volumes/Datos/Trabajo/Sistemas/Planilla/backend/planillas/apps/transacciones/views.py**
-```Python
+```python
 # apps/transacciones/views.py
 from rest_framework import viewsets
 from rest_framework.permissions import IsAuthenticated
@@ -2029,17 +3118,27 @@ class TransaccionTrabajadorViewSet(viewsets.ModelViewSet):
     queryset = TransaccionContrato.objects.all()
     serializer_class = TransaccionTrabajadorSerializer
     permission_classes = [IsAuthenticated]
-```
+
+    def get_queryset(self):
+        user = self.request.user
+        queryset = TransaccionContrato.objects.select_related(
+            'contrato', 'transaccion', 'contrato__trabajador', 'contrato__trabajador__persona'
+        )
+        
+        if user.role != 'admin_sistema':
+            queryset = queryset.filter(contrato__trabajador__ugel=user.ugel)
+        
+        return queryset.distinct()```
 
 **Ruta: /Volumes/Datos/Trabajo/Sistemas/Planilla/backend/planillas/apps/planillas/models.py**
-```Python
+```python
 # apps/planillas/models.py
 from django.db import models
 from apps.trabajadores.models import Trabajador
 from apps.usuarios.models import Beneficiario
 from apps.configuracion.models import Cargo, RegimenLaboral, TipoServidor, ClasePlanilla, FuenteFinanciamiento, Situacion, Periodo
-from django.utils import timezone
-from django.db.models import Sum, Max
+
+from auditlog.registry import auditlog
 
 
 
@@ -2072,75 +3171,14 @@ class Contrato(models.Model):
         ordering = ['id']
         verbose_name = 'Contrato'
         verbose_name_plural = 'Contratos'
+        indexes = [
+            models.Index(fields=['trabajador'], name='idx_contrato_trabajador'),
+            models.Index(fields=['clase_planilla', 'fuente_financiamiento'], name='idx_contrato_clase_fuente'),
+            models.Index(fields=['fecha_ingreso', 'fecha_cese'], name='idx_contrato_fechas'),
+        ]
 
     def save(self, *args, **kwargs):
         super().save(*args, **kwargs)
-        self.registrar_transacciones()
-
-
-    def registrar_transacciones(self):
-        from django.db import transaction
-        from apps.configuracion.models import Transaccion, ComisionAfp
-        from django.db.models import Q
-        from decimal import Decimal
-        if self.clase_planilla.codigo_clase_planilla != '03':  # Si no es CAS, salir
-            return
-
-        try:
-            periodo_actual = Periodo.objects.get(estado=True).periodo
-        except Periodo.DoesNotExist:
-            raise ValueError("No hay un periodo activo para procesar las planillas.")
-
-        sueldo_proporcional = (self.sueldo * Decimal(self.dias_laborados)) / Decimal('30')
-
-        transacciones = {
-            'remuneracion': Transaccion.objects.get(id=1),  # Remuneracion CAS
-            'onp': Transaccion.objects.get(id=6),  # DL 19990 - ONP
-            'afp': Transaccion.objects.get(id=3),  # Ley 25897 - AFP
-        }
-
-        with transaction.atomic():
-            # Registrar transacción de remuneración
-            self.registrar_transaccion(transacciones['remuneracion'], sueldo_proporcional, periodo_actual)
-
-            # Registrar descuento según régimen pensionario
-            regimen_pensionario = self.trabajador.regimen_pensionario.codigo_regimen_pensionario
-
-            if regimen_pensionario == '02':  # ONP
-                monto_descuento = sueldo_proporcional * Decimal('0.13')
-                self.registrar_transaccion(transacciones['onp'], monto_descuento, periodo_actual)
-            elif regimen_pensionario == '03':  # AFP
-                try:
-                    comision_afp = ComisionAfp.objects.get(
-                        Q(afp=self.trabajador.afp) & Q(periodo__periodo=periodo_actual)
-                    )
-                    print(periodo_actual)
-                    monto_descuento = sueldo_proporcional * (comision_afp.total_comision / Decimal('100'))
-                    self.registrar_transaccion(transacciones['afp'], monto_descuento, periodo_actual)
-                except ComisionAfp.DoesNotExist:
-                    print(f"No se encontró comisión AFP para {self.trabajador.afp} en el periodo {periodo_actual}")
-                    # Aquí podrías lanzar una excepción o manejar el error de otra manera
-
-    def registrar_transaccion(self, transaccion, monto, periodo):
-        from apps.transacciones.models import TransaccionContrato
-        
-        existe_transaccion = TransaccionContrato.objects.filter(
-            contrato=self,
-            transaccion=transaccion,
-            estado=True,
-            periodo_inicial__lte=periodo,
-            periodo_final__gte=periodo
-        ).exists()
-
-        if not existe_transaccion:
-            TransaccionContrato.objects.create(
-                contrato=self,
-                transaccion=transaccion,
-                monto=monto,
-                periodo_inicial=periodo,
-                periodo_final=periodo,
-                estado=True
-            )
 
 
 
@@ -2150,7 +3188,7 @@ class Planilla(models.Model):
         ('CERRADO', 'Cerrado')
     ]
 
-    correlativo = models.CharField(max_length=10, verbose_name='Correlativo')
+    correlativo = models.CharField(max_length=5, verbose_name='Correlativo')
     clase_planilla = models.ForeignKey(ClasePlanilla, on_delete=models.CASCADE, verbose_name='Clase de Planilla')
     fuente_financiamiento = models.ForeignKey(FuenteFinanciamiento, on_delete=models.CASCADE, verbose_name='Fuente de Financiamiento')
     periodo = models.ForeignKey(Periodo, on_delete=models.CASCADE, verbose_name='Período')
@@ -2164,6 +3202,10 @@ class Planilla(models.Model):
     class Meta:
         unique_together = ('correlativo', 'periodo')
         db_table = 'planilla'
+        indexes = [
+            models.Index(fields=['periodo', 'estado'], name='idx_planilla_periodo_estado'),
+            models.Index(fields=['clase_planilla', 'fuente_financiamiento'], name='idx_planilla_clase_fuente'),
+        ]
 
     def __str__(self):
         return f'{self.correlativo} - {self.clase_planilla} - {self.fuente_financiamiento} - {self.periodo} - {self.estado}'
@@ -2171,10 +3213,10 @@ class Planilla(models.Model):
 class Boleta(models.Model):
     contrato = models.ForeignKey(Contrato, on_delete=models.CASCADE, related_name='boletas')
     planilla = models.ForeignKey(Planilla, on_delete=models.CASCADE, related_name='boletas')
-    total_haberes = models.DecimalField(max_digits=12, decimal_places=2, default=0, verbose_name='Total Haberes', editable=False)
-    total_descuentos = models.DecimalField(max_digits=12, decimal_places=2, default=0, verbose_name='Total Descuentos', editable=False)
-    total_aportes = models.DecimalField(max_digits=12, decimal_places=2, default=0, verbose_name='Total Aportes', editable=False)
-    neto_a_pagar = models.DecimalField(max_digits=12, decimal_places=2, default=0, verbose_name='Neto a Pagar', editable=False)
+    total_haberes = models.DecimalField(max_digits=12, decimal_places=2, default=0, verbose_name='Total Haberes')
+    total_descuentos = models.DecimalField(max_digits=12, decimal_places=2, default=0, verbose_name='Total Descuentos')
+    total_aportes = models.DecimalField(max_digits=12, decimal_places=2, default=0, verbose_name='Total Aportes')
+    neto_a_pagar = models.DecimalField(max_digits=12, decimal_places=2, default=0, verbose_name='Neto a Pagar')
     numero_boleta = models.CharField(max_length=3, verbose_name='Número de Boleta', editable=False)
     visualizada = models.BooleanField(default=False, verbose_name='Visualizada', editable=False)
     fecha_visualizacion = models.DateTimeField(null=True, blank=True, verbose_name='Fecha de Visualización', editable=False)
@@ -2211,66 +3253,8 @@ class Boleta(models.Model):
     total_aportes = models.DecimalField(max_digits=12, decimal_places=2, default=0, verbose_name='Total Aportes', editable=False)
     neto_a_pagar = models.DecimalField(max_digits=12, decimal_places=2, default=0, verbose_name='Neto a Pagar', editable=False)
 
-
-    def calcular_totales(self):
-        transacciones = self.contrato.transacciones.filter(
-            periodo_inicial__lte=self.planilla.periodo,
-            periodo_final__gte=self.planilla.periodo,
-            estado=True
-        )
-        self.total_haberes = transacciones.filter(transaccion__tipo_transaccion='HABER').aggregate(Sum('monto'))['monto__sum'] or 0
-        self.total_descuentos = transacciones.filter(transaccion__tipo_transaccion='DESCUENTO').aggregate(Sum('monto'))['monto__sum'] or 0
-        self.total_aportes = transacciones.filter(transaccion__tipo_transaccion='APORTE').aggregate(Sum('monto'))['monto__sum'] or 0
-        self.neto_a_pagar = self.total_haberes - self.total_descuentos
-
-    def generar_numero_boleta(self):
-        # Obtener el número de boleta más alto del período actual
-        max_numero_boleta = Boleta.objects.filter(planilla=self.planilla).aggregate(Max('numero_boleta'))['numero_boleta__max']
-        if max_numero_boleta:
-            # Incrementar el número de boleta
-            self.numero_boleta = str(int(max_numero_boleta) + 1).zfill(3)
-        else:
-            # Si no hay boletas en el período, comenzar con '001'
-            self.numero_boleta = '001'
-
-    def registrar_transacciones_boleta(self):
-        transacciones = self.contrato.transacciones.filter(
-            periodo_inicial__lte=self.planilla.periodo,
-            periodo_final__gte=self.planilla.periodo,
-            estado=True
-        )
-        for transaccion in transacciones:
-            BoletaTransaccion.objects.create(
-                boleta=self,
-                tipo=transaccion.transaccion.tipo_transaccion,
-                codigo=transaccion.transaccion.codigo_transaccion_mcpp,
-                descripcion=transaccion.transaccion.descripcion_transaccion,
-                monto=transaccion.monto
-            )
-
     def save(self, *args, **kwargs):
-        if not self.numero_boleta:
-            self.generar_numero_boleta()
-        self.calcular_totales()
         super().save(*args, **kwargs)
-        self.registrar_transacciones_boleta()
-        self.actualizar_totales_planilla()
-
-    def actualizar_totales_planilla(self):
-        self.planilla.total_haberes = Boleta.objects.filter(planilla=self.planilla).aggregate(Sum('total_haberes'))['total_haberes__sum'] or 0
-        self.planilla.total_descuentos = Boleta.objects.filter(planilla=self.planilla).aggregate(Sum('total_descuentos'))['total_descuentos__sum'] or 0
-        self.planilla.total_aportes = Boleta.objects.filter(planilla=self.planilla).aggregate(Sum('total_aportes'))['total_aportes__sum'] or 0
-        self.planilla.save()
-
-    def marcar_como_visualizada(self):
-        self.visualizada = True
-        self.fecha_visualizacion = timezone.now()
-        self.save()
-
-    def marcar_como_descargada(self):
-        self.descargada = True
-        self.fecha_descarga = timezone.now()
-        self.save()
 
     def __str__(self):
         return f'{self.contrato} - {self.planilla} - {self.planilla.periodo}'
@@ -2281,6 +3265,10 @@ class Boleta(models.Model):
         unique_together = ('contrato', 'planilla')
         verbose_name = 'Boleta'
         verbose_name_plural = 'Boletas'
+        indexes = [
+            models.Index(fields=['contrato', 'planilla'], name='idx_boleta_contrato_planilla'),
+            models.Index(fields=['visualizada', 'descargada'], name='idx_boleta_estado'),
+        ]
 
 class BoletaTransaccion(models.Model):
     boleta = models.ForeignKey(Boleta, on_delete=models.CASCADE, related_name='transacciones')
@@ -2310,25 +3298,35 @@ class PlanillaBeneficiario(models.Model):
         verbose_name_plural = 'Planillas de los Beneficiarios'
 
 
+auditlog.register(Contrato)
+auditlog.register(Planilla)
+auditlog.register(Boleta)
+auditlog.register(BoletaTransaccion)
+auditlog.register(PlanillaBeneficiario)
 ```
 
 **Ruta: /Volumes/Datos/Trabajo/Sistemas/Planilla/backend/planillas/apps/planillas/serializers.py**
-```Python
+```python
 # apps/planillas/serializers.py
 from rest_framework import serializers
-from .models import Periodo, PlanillaBeneficiario, Contrato, Planilla, Boleta
+from .models import Periodo, PlanillaBeneficiario, Contrato, Planilla, Boleta, BoletaTransaccion
+from django.db import transaction
 from apps.transacciones.models import TransaccionContrato
 
-class TransaccionTrabajadorSerializer(serializers.ModelSerializer):
+class BoletaTransaccionSerializer(serializers.ModelSerializer):
     class Meta:
-        model = TransaccionContrato
+        model = BoletaTransaccion
         fields = '__all__'
         extra_kwargs = {
             'contrato': {'required': False, 'allow_null': True},
             'transaccion': {'required': False, 'allow_null': True},
         }
-        ref_name = 'TransaccionTrabajadorSerializerPlanillas'
-
+        ref_name = 'BoletaTransaccionSerializerPlanillas'
+# La clase de abajo se usa para poder registrar transacciones al momento de crear o actualizar un contrato
+class TransaccionContratoSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = TransaccionContrato
+        fields = '__all__'
 
 class PlanillaBeneficiarioSerializer(serializers.ModelSerializer):
     class Meta:
@@ -2336,30 +3334,54 @@ class PlanillaBeneficiarioSerializer(serializers.ModelSerializer):
         fields = '__all__'
         ref_name = 'PlanillaBeneficiarioSerializerPlanillas'
 
+    def validate_monto(self, value):
+        if value < 0:
+            raise serializers.ValidationError("El monto no puede ser negativo.")
+        return value
+
 class ContratoSerializer(serializers.ModelSerializer):
-    transacciones = TransaccionTrabajadorSerializer(many=True, write_only=True, required=False)
-    transacciones_detalles = TransaccionTrabajadorSerializer(many=True, read_only=True, source='transacciones')
+    transacciones = TransaccionContratoSerializer(many=True, write_only=True, required=False)
+    transacciones_detalles = TransaccionContratoSerializer(many=True, read_only=True, source='transacciones')
 
     class Meta:
         model = Contrato
         fields = '__all__'
 
+    def validate(self, data):
+        if 'fecha_cese' in data and data['fecha_cese'] and data['fecha_cese'] <= data['fecha_ingreso']:
+            raise serializers.ValidationError("La fecha de cese debe ser posterior a la fecha de ingreso.")
+        if data['dias_laborados'] < 0 or data['dias_laborados'] > 30:
+            raise serializers.ValidationError("Los días laborados deben estar entre 0 y 30.")
+        if data.get('sueldo') and data['sueldo'] <= 0:
+            raise serializers.ValidationError("El sueldo debe ser mayor que cero.")
+        if data['jornada_laboral'] < 0 or data['jornada_laboral'] > 48:
+            raise serializers.ValidationError("La jornada laboral debe estar entre 0 y 48 horas.")
+        return data
+
+
+    def validate_sueldo(self, value):
+        if value <= 0:
+            raise serializers.ValidationError("El sueldo debe ser mayor que cero.")
+        return value
+
+    @transaction.atomic
     def create(self, validated_data):
         transacciones_data = validated_data.pop('transacciones', [])
         contrato = Contrato.objects.create(**validated_data)
         for transaccion_data in transacciones_data:
-            if transaccion_data:  # Verificar que transaccion_data no esté vacío
+            if transaccion_data:
                 TransaccionContrato.objects.create(contrato=contrato, **transaccion_data)
         return contrato
 
+    @transaction.atomic
     def update(self, instance, validated_data):
         transacciones_data = validated_data.pop('transacciones', [])
         instance = super().update(instance, validated_data)
 
         if transacciones_data:
-            instance.transacciones.all().delete()  # Elimina las transacciones existentes
+            instance.transacciones.all().delete()
             for transaccion_data in transacciones_data:
-                if transaccion_data:  # Verificar que transaccion_data no esté vacío
+                if transaccion_data:
                     TransaccionContrato.objects.create(contrato=instance, **transaccion_data)
 
         return instance
@@ -2370,6 +3392,22 @@ class PlanillaSerializer(serializers.ModelSerializer):
     class Meta:
         model = Planilla
         fields = '__all__'
+
+    def validate_correlativo(self, value):
+        if len(value) != 3:
+            raise serializers.ValidationError("El correlativo debe tener 3 caracteres.")
+        return value
+
+    def validate(self, data):
+        if data['total_haberes'] < 0:
+            raise serializers.ValidationError("El total de haberes no puede ser negativo.")
+        if data['total_descuentos'] < 0:
+            raise serializers.ValidationError("El total de descuentos no puede ser negativo.")
+        if data['total_aportes'] < 0:
+            raise serializers.ValidationError("El total de aportes no puede ser negativo.")
+        if data['estado'] not in dict(Planilla.ESTADO_CHOICES):
+            raise serializers.ValidationError("El estado no es válido.")
+        return data
 
     def create(self, validated_data):
         contratos_data = validated_data.pop('contratos', [])
@@ -2393,20 +3431,34 @@ class PlanillaSerializer(serializers.ModelSerializer):
 
         return instance
 
+
+
+
 class BoletaSerializer(serializers.ModelSerializer):
     planilla = PlanillaSerializer(read_only=True)
     contrato = ContratoSerializer(read_only=True)
 
     class Meta:
         model = Boleta
-        fields = '__all__'```
+        fields = '__all__'
+
+    def validate(self, data):
+        if data['total_haberes'] < 0:
+            raise serializers.ValidationError("El total de haberes no puede ser negativo.")
+        if data['total_descuentos'] < 0:
+            raise serializers.ValidationError("El total de descuentos no puede ser negativo.")
+        if data['total_aportes'] < 0:
+            raise serializers.ValidationError("El total de aportes no puede ser negativo.")
+        if data['neto_a_pagar'] < 0:
+            raise serializers.ValidationError("El neto a pagar no puede ser negativo.")
+        return data```
 
 **Ruta: /Volumes/Datos/Trabajo/Sistemas/Planilla/backend/planillas/apps/planillas/__init__.py**
-```Python
+```python
 ```
 
 **Ruta: /Volumes/Datos/Trabajo/Sistemas/Planilla/backend/planillas/apps/planillas/apps.py**
-```Python
+```python
 from django.apps import AppConfig
 
 
@@ -2416,10 +3468,10 @@ class PlanillasConfig(AppConfig):
 ```
 
 **Ruta: /Volumes/Datos/Trabajo/Sistemas/Planilla/backend/planillas/apps/planillas/admin.py**
-```Python
+```python
 # apps/planillas/admin.py
 from django.contrib import admin
-from .models import  PlanillaBeneficiario, Contrato, Planilla, Boleta
+from .models import  PlanillaBeneficiario, Contrato, Planilla, Boleta, BoletaTransaccion
 from apps.configuracion.admin import TransaccionTrabajadorInline
 
 @admin.register(PlanillaBeneficiario)
@@ -2453,18 +3505,25 @@ class BoletaAdmin(admin.ModelAdmin):
 
 
 
-from apps.procesos.utils import generar_boletas_para_planilla
+from apps.procesos.periodo_normal import CalcularPlanillaRemuneraciones, GenerarBoletasPago
 
 @admin.action(description='Generar boletas para esta planilla')
 def generar_boletas(modeladmin, request, queryset):
     for planilla in queryset:
-        generar_boletas_para_planilla(planilla.id)
+        GenerarBoletasPago(planilla.id)
     modeladmin.message_user(request, "Boletas generadas exitosamente.")
+
+@admin.action(description='Calcular planilla de remuneraciones')
+def calcular_planilla_remuneraciones(modeladmin, request, queryset):
+    for planilla in queryset:
+        CalcularPlanillaRemuneraciones(planilla.id)
+    modeladmin.message_user(request, "Planillas de remuneraciones calculadas exitosamente.")
+
 
 @admin.register(Planilla)
 class PlanillaAdmin(admin.ModelAdmin):
     list_display = ('correlativo', 'clase_planilla', 'fuente_financiamiento', 'periodo', 'total_haberes', 'total_descuentos', 'total_aportes', 'estado')
-    actions = [generar_boletas]
+    actions = [generar_boletas, calcular_planilla_remuneraciones]
     search_fields = ('correlativo', 'clase_planilla__nombre', 'fuente_financiamiento__nombre')
     list_filter = ('estado', 'periodo', 'clase_planilla', 'fuente_financiamiento')
     ordering = ('correlativo', 'periodo')
@@ -2474,20 +3533,26 @@ class PlanillaAdmin(admin.ModelAdmin):
         queryset = queryset.select_related('clase_planilla', 'fuente_financiamiento', 'periodo')
         return queryset
 
-```
+
+@admin.register(BoletaTransaccion)
+class BoletaTransaccionAdmin(admin.ModelAdmin):
+    list_display = ('boleta', 'tipo', 'codigo', 'descripcion', 'monto')
+    search_fields = ('boleta__numero_boleta', 'tipo', 'codigo', 'descripcion')
+    list_filter = ('tipo', 'codigo')
+    ordering = ('boleta', 'tipo', 'codigo')```
 
 **Ruta: /Volumes/Datos/Trabajo/Sistemas/Planilla/backend/planillas/apps/planillas/tests.py**
-```Python
+```python
 from django.test import TestCase
 
 # Create your tests here.
 ```
 
 **Ruta: /Volumes/Datos/Trabajo/Sistemas/Planilla/backend/planillas/apps/planillas/urls.py**
-```Python
+```python
 # apps/planillas/urls.py
 from rest_framework.routers import DefaultRouter
-from .views import PlanillaBeneficiarioViewSet,ContratoViewSet, PlanillaViewSet, BoletaViewSet
+from .views import PlanillaBeneficiarioViewSet,ContratoViewSet, PlanillaViewSet, BoletaViewSet, BoletaTransaccionViewSet
 
 router = DefaultRouter()
 router.register(r'contratos', ContratoViewSet)
@@ -2495,19 +3560,20 @@ router.register(r'planillas', PlanillaViewSet)
 router.register(r'boletas', BoletaViewSet)
 
 router.register(r'planillas-beneficiarios', PlanillaBeneficiarioViewSet)
+router.register(r'boleta-transaccion', BoletaTransaccionViewSet)
 
 
 urlpatterns = router.urls
 ```
 
 **Ruta: /Volumes/Datos/Trabajo/Sistemas/Planilla/backend/planillas/apps/planillas/views.py**
-```Python
+```python
 # apps/planillas/views.py
 from django.db.models import Max
 from rest_framework import viewsets
 from rest_framework.permissions import IsAuthenticated
-from .models import PlanillaBeneficiario, Contrato, Planilla, Boleta
-from .serializers import PlanillaBeneficiarioSerializer, ContratoSerializer, PlanillaSerializer, BoletaSerializer
+from .models import PlanillaBeneficiario, Contrato, Planilla, Boleta, BoletaTransaccion
+from .serializers import PlanillaBeneficiarioSerializer, ContratoSerializer, PlanillaSerializer, BoletaSerializer, BoletaTransaccionSerializer
 from apps.transacciones.models import TransaccionContrato
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -2524,10 +3590,15 @@ class ContratoViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         user = self.request.user
-        if user.role == 'admin_sistema':
-            return Contrato.objects.all()
-        return Contrato.objects.filter(trabajador__ugel=user.ugel)
-
+        queryset = Contrato.objects.select_related(
+            'trabajador', 'trabajador__persona', 'cargo', 'regimen_laboral',
+            'tipo_servidor', 'clase_planilla', 'fuente_financiamiento', 'situacion'
+        ).prefetch_related('transacciones')
+        
+        if user.role != 'admin_sistema':
+            queryset = queryset.filter(trabajador__ugel=user.ugel)
+        
+        return queryset
 class ProcesarPlanillaView(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -2583,10 +3654,10 @@ class PlanillaViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         user = self.request.user
-        if user.role == 'admin_sistema':
-            return Planilla.objects.all()
-        return Planilla.objects.filter(boletas__contrato__trabajador__ugel=user.ugel)
-
+        queryset = Planilla.objects.select_related('clase_planilla', 'fuente_financiamiento', 'periodo')
+        if user.role != 'admin_sistema':
+            queryset = queryset.filter(boletas__contrato__trabajador__ugel=user.ugel)
+        return queryset.distinct()
 class BoletaViewSet(viewsets.ModelViewSet):
     queryset = Boleta.objects.all()
     serializer_class = BoletaSerializer
@@ -2594,12 +3665,33 @@ class BoletaViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         user = self.request.user
-        if user.role == 'admin_sistema':
-            return Boleta.objects.all()
-        return Boleta.objects.filter(contrato__trabajador__ugel=user.ugel)```
+        queryset = Boleta.objects.select_related(
+            'contrato', 'planilla', 'contrato__trabajador', 'contrato__trabajador__persona'
+        ).prefetch_related('transacciones')
+        
+        if user.role != 'admin_sistema':
+            queryset = queryset.filter(contrato__trabajador__ugel=user.ugel)
+        
+        return queryset
+class BoletaTransaccionViewSet(viewsets.ModelViewSet):
+    queryset = BoletaTransaccion.objects.all()
+    serializer_class = BoletaTransaccionSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        user = self.request.user
+        queryset = BoletaTransaccion.objects.select_related(
+            'boleta', 'boleta__contrato', 'boleta__planilla',
+            'boleta__contrato__trabajador', 'boleta__contrato__trabajador__persona'
+        )
+        
+        if user.role != 'admin_sistema':
+            queryset = queryset.filter(boleta__contrato__trabajador__ugel=user.ugel)
+        
+        return queryset.distinct()```
 
 **Ruta: /Volumes/Datos/Trabajo/Sistemas/Planilla/backend/planillas/apps/auditoria/models.py**
-```Python
+```python
 # apps/auditoria/models.py
 from django.db import models
 from apps.usuarios.models import Persona
@@ -2607,28 +3699,24 @@ from apps.usuarios.models import Persona
 class Auditoria(models.Model):
     fecha = models.DateTimeField(auto_now_add=True, verbose_name='Fecha')
     descripcion = models.TextField(verbose_name='Descripción')
-    persona = models.ForeignKey(
-        Persona, on_delete=models.CASCADE, verbose_name='Persona'
-    )
-    ip_address = models.GenericIPAddressField(
-        null=True, blank=True, verbose_name='Dirección IP'
-    )
-    user_agent = models.CharField(
-        max_length=255, null=True, blank=True, verbose_name='User Agent'
-    )
-    accion = models.CharField(
-        max_length=50, verbose_name='Acción'
-    )
+    persona = models.ForeignKey(Persona, on_delete=models.CASCADE, verbose_name='Persona')
+    ip_address = models.GenericIPAddressField(null=True, blank=True, verbose_name='Dirección IP')
+    user_agent = models.CharField(max_length=255, null=True, blank=True, verbose_name='User Agent')
+    accion = models.CharField(max_length=50, verbose_name='Acción')
 
     class Meta:
         db_table = 'auditoria'
         ordering = ['-fecha']
         verbose_name = 'Auditoría'
         verbose_name_plural = 'Auditorías'
+        indexes = [
+            models.Index(fields=['fecha', 'accion'], name='idx_auditoria_fecha_accion'),
+            models.Index(fields=['persona'], name='idx_auditoria_persona'),
+        ]
 ```
 
 **Ruta: /Volumes/Datos/Trabajo/Sistemas/Planilla/backend/planillas/apps/auditoria/serializers.py**
-```Python
+```python
 # apps/auditoria/serializers.py
 from rest_framework import serializers
 from .models import Auditoria
@@ -2637,14 +3725,21 @@ class AuditoriaSerializer(serializers.ModelSerializer):
     class Meta:
         model = Auditoria
         fields = ['id', 'fecha', 'descripcion', 'persona', 'ip_address', 'user_agent', 'accion']
-```
+
+    def validate_ip_address(self, value):
+        import ipaddress
+        try:
+            ipaddress.ip_address(value)
+        except ValueError:
+            raise serializers.ValidationError("Dirección IP inválida.")
+        return value```
 
 **Ruta: /Volumes/Datos/Trabajo/Sistemas/Planilla/backend/planillas/apps/auditoria/__init__.py**
-```Python
+```python
 ```
 
 **Ruta: /Volumes/Datos/Trabajo/Sistemas/Planilla/backend/planillas/apps/auditoria/apps.py**
-```Python
+```python
 from django.apps import AppConfig
 
 
@@ -2654,7 +3749,7 @@ class AuditoriaConfig(AppConfig):
 ```
 
 **Ruta: /Volumes/Datos/Trabajo/Sistemas/Planilla/backend/planillas/apps/auditoria/admin.py**
-```Python
+```python
 # apps/auditoria/admin.py
 from django.contrib import admin
 from .models import Auditoria
@@ -2668,14 +3763,14 @@ class AuditoriaAdmin(admin.ModelAdmin):
 ```
 
 **Ruta: /Volumes/Datos/Trabajo/Sistemas/Planilla/backend/planillas/apps/auditoria/tests.py**
-```Python
+```python
 from django.test import TestCase
 
 # Create your tests here.
 ```
 
 **Ruta: /Volumes/Datos/Trabajo/Sistemas/Planilla/backend/planillas/apps/auditoria/urls.py**
-```Python
+```python
 # apps/auditoria/urls.py
 from rest_framework.routers import DefaultRouter
 from .views import AuditoriaViewSet
@@ -2687,14 +3782,22 @@ urlpatterns = router.urls
 ```
 
 **Ruta: /Volumes/Datos/Trabajo/Sistemas/Planilla/backend/planillas/apps/auditoria/views.py**
-```Python
+```python
 # apps/auditoria/views.py
 from rest_framework import viewsets
+from rest_framework.permissions import IsAuthenticated
 from .models import Auditoria
 from .serializers import AuditoriaSerializer
 
 class AuditoriaViewSet(viewsets.ModelViewSet):
     queryset = Auditoria.objects.all()
     serializer_class = AuditoriaSerializer
-```
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        user = self.request.user
+        queryset = self.queryset.select_related('persona').order_by('-fecha')
+        if user.role != 'admin_sistema':
+            queryset = queryset.filter(persona__user__ugel=user.ugel)
+        return queryset```
 

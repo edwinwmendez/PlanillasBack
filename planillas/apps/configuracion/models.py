@@ -1,7 +1,12 @@
 # apps/configuracion/models.py
+from django.db import IntegrityError
+from rest_framework import status
+from rest_framework.response import Response
 from django.db import models
 from django.core.exceptions import ValidationError
 from django.utils.translation import gettext_lazy as _
+from django.utils import timezone
+from auditlog.registry import auditlog
 
 class TipoDocumento(models.Model):
     codigo_tipo_documento = models.CharField(max_length=2, unique=True, verbose_name='Código')
@@ -18,6 +23,15 @@ class TipoDocumento(models.Model):
         verbose_name = 'Tipo de Documento'
         verbose_name_plural = 'Tipos de Documento'
 
+    def create(self, request, *args, **kwargs):
+        try:
+            return super().create(request, *args, **kwargs)
+        except IntegrityError as e:
+            return Response(
+                {"detail": "La UGEL ya se encuentra registrada."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
 
 class Sexo(models.Model):
     codigo_sexo = models.CharField(max_length=1, unique=True, verbose_name='Código')
@@ -33,6 +47,15 @@ class Sexo(models.Model):
         ordering = ['descripcion_sexo']
         verbose_name = 'Sexo'
         verbose_name_plural = 'Sexos'
+    
+    def create(self, request, *args, **kwargs):
+        try:
+            return super().create(request, *args, **kwargs)
+        except IntegrityError as e:
+            return Response(
+                {"detail": "El régimen pensionario ya se encuentra registrado."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
 
 
 class TipoDescuento(models.Model):
@@ -49,6 +72,15 @@ class TipoDescuento(models.Model):
         ordering = ['descripcion_tipo_descuento']
         verbose_name = 'Tipo de Descuento'
         verbose_name_plural = 'Tipos de Descuento'
+    
+    def create(self, request, *args, **kwargs):
+        try:
+            return super().create(request, *args, **kwargs)
+        except IntegrityError as e:
+            return Response(
+                {"detail": "El régimen pensionario ya se encuentra registrado."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
 
 
 class TipoBeneficiario(models.Model):
@@ -82,48 +114,47 @@ class Ugel(models.Model):
         ordering = ['nombre_ugel']
         verbose_name = 'UGEL'
         verbose_name_plural = 'UGELs'
+        indexes = [
+            models.Index(fields=['codigo_ugel'], name='idx_ugel_codigo'),
+        ]
+
+    def create(self, request, *args, **kwargs):
+        try:
+            return super().create(request, *args, **kwargs)
+        except IntegrityError as e:
+            return Response(
+                {"detail": "El régimen pensionario ya se encuentra registrado."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
 
 
 class Periodo(models.Model):
-    mes = models.CharField(max_length=2, blank=True, verbose_name='Mes')
-    anio = models.CharField(max_length=4, blank=True, verbose_name='Año')
     periodo = models.CharField(max_length=6, unique=True, blank=True, verbose_name='Periodo', editable=False)
     es_adicional = models.BooleanField(default=False, verbose_name='¿Es adicional?')
-    periodo_actual = models.CharField(max_length=6, blank=True, verbose_name='Periodo Actual', editable=False, null=True, default=None)
     estado = models.BooleanField(default=True, verbose_name='Activo')
     created = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)
 
     def __str__(self):
-        return f'{self.periodo} - {self.mes}/{self.anio}'
-
-    def clean(self):
-        if not self.periodo:
-            self.periodo = f'{self.anio}{self.mes}'
-        if not self.es_adicional and Periodo.objects.filter(mes=self.mes, anio=self.anio, es_adicional=False).exists():
-            raise ValidationError('Ya existe un período principal para este mes y año.')
-
-    def save(self, *args, **kwargs):
-        self.clean()
-        if not self.periodo:
-            self.periodo = f'{self.anio}{self.mes}'
-
-        if not self.es_adicional:
-            last_principal_periodo = Periodo.objects.filter(
-                es_adicional=False).order_by('-id').first()
-            self.periodo_actual = last_principal_periodo.periodo if last_principal_periodo else None
-
-        if not self.es_adicional and Periodo.objects.filter(mes=self.mes, anio=self.anio, es_adicional=False).exists():
-            raise ValidationError('Ya existe un período principal para este mes y año.')
-
-        super().save(*args, **kwargs)
+        return f'{self.periodo} - {self.estado}'
 
     class Meta:
         db_table = 'periodo'
-        ordering = ['anio', 'mes']
+        ordering = ['periodo', 'es_adicional']
         verbose_name = 'Período'
         verbose_name_plural = 'Períodos'
+        indexes = [
+            models.Index(fields=['periodo', 'estado'], name='idx_periodo_estado'),
+        ]
 
+    def create(self, request, *args, **kwargs):
+        try:
+            return super().create(request, *args, **kwargs)
+        except IntegrityError as e:
+            return Response(
+                {"detail": "El régimen pensionario ya se encuentra registrado."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
 
 class TipoPlanilla(models.Model):
     nombre_tipo_planilla = models.CharField(max_length=45, blank=True, verbose_name='Nombre de Tipo de Planilla')
@@ -139,6 +170,15 @@ class TipoPlanilla(models.Model):
         ordering = ['nombre_tipo_planilla']
         verbose_name = 'Tipo de Planilla'
         verbose_name_plural = 'Tipos de Planilla'
+    
+    def create(self, request, *args, **kwargs):
+        try:
+            return super().create(request, *args, **kwargs)
+        except IntegrityError as e:
+            return Response(
+                {"detail": "El régimen pensionario ya se encuentra registrado."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
 
 
 class ClasePlanilla(models.Model):
@@ -156,6 +196,15 @@ class ClasePlanilla(models.Model):
         ordering = ['nombre_clase_planilla']
         verbose_name = 'Clase de Planilla'
         verbose_name_plural = 'Clases de Planilla'
+    
+    def create(self, request, *args, **kwargs):
+        try:
+            return super().create(request, *args, **kwargs)
+        except IntegrityError as e:
+            return Response(
+                {"detail": "El régimen pensionario ya se encuentra registrado."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
 
 
 class FuenteFinanciamiento(models.Model):
@@ -172,6 +221,15 @@ class FuenteFinanciamiento(models.Model):
         ordering = ['nombre_fuente_financiamiento']
         verbose_name = 'Fuente de Financiamiento'
         verbose_name_plural = 'Fuentes de Financiamiento'
+    
+    def create(self, request, *args, **kwargs):
+        try:
+            return super().create(request, *args, **kwargs)
+        except IntegrityError as e:
+            return Response(
+                {"detail": "El régimen pensionario ya se encuentra registrado."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
 
 
 class Transaccion(models.Model):
@@ -217,6 +275,10 @@ class Transaccion(models.Model):
         ordering = ['descripcion_transaccion']
         verbose_name = 'Transacción'
         verbose_name_plural = 'Transacciones'
+        indexes = [
+            models.Index(fields=['codigo_transaccion_mcpp'], name='idx_transaccion_codigo_mcpp'),
+            models.Index(fields=['tipo_transaccion'], name='idx_transaccion_tipo'),
+        ]
 
 
 class Cargo(models.Model):
@@ -234,6 +296,15 @@ class Cargo(models.Model):
         verbose_name = 'Cargo'
         verbose_name_plural = 'Cargos'
 
+    def create(self, request, *args, **kwargs):
+        try:
+            return super().create(request, *args, **kwargs)
+        except IntegrityError as e:
+            return Response(
+                {"detail": "El régimen pensionario ya se encuentra registrado."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
 
 class RegimenLaboral(models.Model):
     nombre_regimen_laboral = models.CharField(max_length=45, verbose_name='Nombre de Régimen Laboral')
@@ -249,6 +320,15 @@ class RegimenLaboral(models.Model):
         ordering = ['nombre_regimen_laboral']
         verbose_name = 'Régimen Laboral'
         verbose_name_plural = 'Regímenes Laborales'
+    
+    def create(self, request, *args, **kwargs):
+        try:
+            return super().create(request, *args, **kwargs)
+        except IntegrityError as e:
+            return Response(
+                {"detail": "El régimen pensionario ya se encuentra registrado."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
 
 
 class TipoServidor(models.Model):
@@ -265,6 +345,15 @@ class TipoServidor(models.Model):
         ordering = ['nombre_tipo_servidor']
         verbose_name = 'Tipo de Servidor'
         verbose_name_plural = 'Tipos de Servidores'
+    
+    def create(self, request, *args, **kwargs):
+        try:
+            return super().create(request, *args, **kwargs)
+        except IntegrityError as e:
+            return Response(
+                {"detail": "El régimen pensionario ya se encuentra registrado."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
 
 
 class RegimenPensionario(models.Model):
@@ -281,6 +370,15 @@ class RegimenPensionario(models.Model):
         ordering = ['nombre_regimen_pensionario']
         verbose_name = 'Régimen Pensionario'
         verbose_name_plural = 'Regímenes Pensionarios'
+    
+    def create(self, request, *args, **kwargs):
+        try:
+            return super().create(request, *args, **kwargs)
+        except IntegrityError as e:
+            return Response(
+                {"detail": "El régimen pensionario ya se encuentra registrado."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
 
 
 class Afp(models.Model):
@@ -297,6 +395,15 @@ class Afp(models.Model):
         ordering = ['nombre_afp']
         verbose_name = 'AFP'
         verbose_name_plural = 'AFPs'
+    
+    def create(self, request, *args, **kwargs):
+        try:
+            return super().create(request, *args, **kwargs)
+        except IntegrityError as e:
+            return Response(
+                {"detail": "El régimen pensionario ya se encuentra registrado."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
 
 
 class Banco(models.Model):
@@ -314,6 +421,15 @@ class Banco(models.Model):
         ordering = ['nombre_banco']
         verbose_name = 'Banco'
         verbose_name_plural = 'Bancos'
+    
+    def create(self, request, *args, **kwargs):
+        try:
+            return super().create(request, *args, **kwargs)
+        except IntegrityError as e:
+            return Response(
+                {"detail": "El régimen pensionario ya se encuentra registrado."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
 
 class Situacion(models.Model):
     nombre_situacion = models.CharField(max_length=45, verbose_name='Nombre de Situación')
@@ -330,6 +446,15 @@ class Situacion(models.Model):
         ordering = ['nombre_situacion']
         verbose_name = 'Situación'
         verbose_name_plural = 'Situaciones'
+    
+    def create(self, request, *args, **kwargs):
+        try:
+            return super().create(request, *args, **kwargs)
+        except IntegrityError as e:
+            return Response(
+                {"detail": "El régimen pensionario ya se encuentra registrado."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
 
 class EstadoCivil(models.Model):
     # el codigo de estado civil debe ser unico
@@ -347,6 +472,15 @@ class EstadoCivil(models.Model):
         ordering = ['nombre_estado_civil']
         verbose_name = 'Estado Civil'
         verbose_name_plural = 'Estados Civiles'
+    
+    def create(self, request, *args, **kwargs):
+        try:
+            return super().create(request, *args, **kwargs)
+        except IntegrityError as e:
+            return Response(
+                {"detail": "El régimen pensionario ya se encuentra registrado."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
 
 # MCPP Web
 
@@ -375,14 +509,85 @@ class ComisionAfp(models.Model):
     prima_seguro = models.DecimalField(max_digits=8, decimal_places=2, verbose_name='Prima de Seguro')
     aporte_obligatorio = models.DecimalField(max_digits=8, decimal_places=2, verbose_name='Aporte Obligatorio')
     total_comision = models.DecimalField(max_digits=8, decimal_places=2, verbose_name='Total Comisión')
+    estado = models.BooleanField(default=True, verbose_name='Activo')
     created = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)
-    
+
     def __str__(self):
         return self.afp.nombre_afp + ' - ' + self.periodo.periodo + ' - ' + str(self.total_comision)
+
+    def save(self, *args, **kwargs):
+        # Calcular el total_comision
+        self.total_comision = self.comision_flujo + self.comision_mixta + self.prima_seguro + self.aporte_obligatorio
+        # Llamar al método save de la superclase
+        super().save(*args, **kwargs)
 
     class Meta:
         db_table = 'comision_afp'
         ordering = ['periodo']
         verbose_name = 'Comisión AFP'
         verbose_name_plural = 'Comisiones AFP'
+        indexes = [
+            models.Index(fields=['periodo', 'afp'], name='idx_comisionafp_periodo_afp'),
+        ]
+
+    def create(self, request, *args, **kwargs):
+        try:
+            return super().create(request, *args, **kwargs)
+        except IntegrityError as e:
+            return Response(
+                {"detail": "El régimen pensionario ya se encuentra registrado."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+class ConfiguracionGlobal(models.Model):
+    clave = models.CharField(max_length=50, unique=True)
+    descripcion = models.TextField()
+    tipo_dato = models.CharField(max_length=20, choices=[
+        ('NUMERIC', 'Numérico'),
+        ('TEXT', 'Texto'),
+        ('JSON', 'JSON'),
+        ('BOOLEAN', 'Booleano'),
+        ('DATE', 'Fecha'),
+    ])
+
+    def __str__(self):
+        return self.clave
+
+class ValorConfiguracionGlobal(models.Model):
+    configuracion = models.ForeignKey(ConfiguracionGlobal, on_delete=models.CASCADE, related_name='valores')
+    valor = models.TextField()
+    norma = models.CharField(max_length=100, null=True, blank=True)
+    fecha_inicio = models.DateField()
+    fecha_fin = models.DateField(null=True, blank=True)
+    creado_por = models.ForeignKey('usuarios.User', on_delete=models.SET_NULL, null=True)
+    fecha_creacion = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-fecha_inicio']
+
+    def __str__(self):
+        return f"{self.configuracion.clave}: {self.valor} (desde {self.fecha_inicio})"
+
+    def save(self, *args, **kwargs):
+        # Si es un nuevo registro (no tiene ID), cerrar el valor anterior
+        if not self.pk:
+            ValorConfiguracionGlobal.objects.filter(
+                configuracion=self.configuracion,
+                fecha_fin__isnull=True
+            ).update(fecha_fin=self.fecha_inicio - timezone.timedelta(days=1))
+
+        super().save(*args, **kwargs)
+
+
+auditlog.register(Ugel)
+auditlog.register(ComisionAfp)
+auditlog.register(Cargo)
+auditlog.register(Periodo)
+auditlog.register(TipoPlanilla)
+auditlog.register(ClasePlanilla)
+auditlog.register(FuenteFinanciamiento)
+auditlog.register(Transaccion)
+auditlog.register(Banco)
+auditlog.register(ConfiguracionGlobal)
+auditlog.register(ValorConfiguracionGlobal)

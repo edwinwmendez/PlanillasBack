@@ -2,8 +2,8 @@
 from django.db.models import Max
 from rest_framework import viewsets
 from rest_framework.permissions import IsAuthenticated
-from .models import PlanillaBeneficiario, Contrato, Planilla, Boleta
-from .serializers import PlanillaBeneficiarioSerializer, ContratoSerializer, PlanillaSerializer, BoletaSerializer
+from .models import PlanillaBeneficiario, Contrato, Planilla, Boleta, BoletaTransaccion
+from .serializers import PlanillaBeneficiarioSerializer, ContratoSerializer, PlanillaSerializer, BoletaSerializer, BoletaTransaccionSerializer
 from apps.transacciones.models import TransaccionContrato
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -20,10 +20,15 @@ class ContratoViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         user = self.request.user
-        if user.role == 'admin_sistema':
-            return Contrato.objects.all()
-        return Contrato.objects.filter(trabajador__ugel=user.ugel)
-
+        queryset = Contrato.objects.select_related(
+            'trabajador', 'trabajador__persona', 'cargo', 'regimen_laboral',
+            'tipo_servidor', 'clase_planilla', 'fuente_financiamiento', 'situacion'
+        ).prefetch_related('transacciones')
+        
+        if user.role != 'admin_sistema':
+            queryset = queryset.filter(trabajador__ugel=user.ugel)
+        
+        return queryset
 class ProcesarPlanillaView(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -79,10 +84,10 @@ class PlanillaViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         user = self.request.user
-        if user.role == 'admin_sistema':
-            return Planilla.objects.all()
-        return Planilla.objects.filter(boletas__contrato__trabajador__ugel=user.ugel)
-
+        queryset = Planilla.objects.select_related('clase_planilla', 'fuente_financiamiento', 'periodo')
+        if user.role != 'admin_sistema':
+            queryset = queryset.filter(boletas__contrato__trabajador__ugel=user.ugel)
+        return queryset.distinct()
 class BoletaViewSet(viewsets.ModelViewSet):
     queryset = Boleta.objects.all()
     serializer_class = BoletaSerializer
@@ -90,6 +95,27 @@ class BoletaViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         user = self.request.user
-        if user.role == 'admin_sistema':
-            return Boleta.objects.all()
-        return Boleta.objects.filter(contrato__trabajador__ugel=user.ugel)
+        queryset = Boleta.objects.select_related(
+            'contrato', 'planilla', 'contrato__trabajador', 'contrato__trabajador__persona'
+        ).prefetch_related('transacciones')
+        
+        if user.role != 'admin_sistema':
+            queryset = queryset.filter(contrato__trabajador__ugel=user.ugel)
+        
+        return queryset
+class BoletaTransaccionViewSet(viewsets.ModelViewSet):
+    queryset = BoletaTransaccion.objects.all()
+    serializer_class = BoletaTransaccionSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        user = self.request.user
+        queryset = BoletaTransaccion.objects.select_related(
+            'boleta', 'boleta__contrato', 'boleta__planilla',
+            'boleta__contrato__trabajador', 'boleta__contrato__trabajador__persona'
+        )
+        
+        if user.role != 'admin_sistema':
+            queryset = queryset.filter(boleta__contrato__trabajador__ugel=user.ugel)
+        
+        return queryset.distinct()

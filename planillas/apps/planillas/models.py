@@ -4,7 +4,7 @@ from apps.trabajadores.models import Trabajador
 from apps.usuarios.models import Beneficiario
 from apps.configuracion.models import Cargo, RegimenLaboral, TipoServidor, ClasePlanilla, FuenteFinanciamiento, Situacion, Periodo
 
-
+from auditlog.registry import auditlog
 
 
 
@@ -37,6 +37,11 @@ class Contrato(models.Model):
         ordering = ['id']
         verbose_name = 'Contrato'
         verbose_name_plural = 'Contratos'
+        indexes = [
+            models.Index(fields=['trabajador'], name='idx_contrato_trabajador'),
+            models.Index(fields=['clase_planilla', 'fuente_financiamiento'], name='idx_contrato_clase_fuente'),
+            models.Index(fields=['fecha_ingreso', 'fecha_cese'], name='idx_contrato_fechas'),
+        ]
 
     def save(self, *args, **kwargs):
         super().save(*args, **kwargs)
@@ -49,7 +54,7 @@ class Planilla(models.Model):
         ('CERRADO', 'Cerrado')
     ]
 
-    correlativo = models.CharField(max_length=10, verbose_name='Correlativo')
+    correlativo = models.CharField(max_length=5, verbose_name='Correlativo')
     clase_planilla = models.ForeignKey(ClasePlanilla, on_delete=models.CASCADE, verbose_name='Clase de Planilla')
     fuente_financiamiento = models.ForeignKey(FuenteFinanciamiento, on_delete=models.CASCADE, verbose_name='Fuente de Financiamiento')
     periodo = models.ForeignKey(Periodo, on_delete=models.CASCADE, verbose_name='Período')
@@ -63,6 +68,10 @@ class Planilla(models.Model):
     class Meta:
         unique_together = ('correlativo', 'periodo')
         db_table = 'planilla'
+        indexes = [
+            models.Index(fields=['periodo', 'estado'], name='idx_planilla_periodo_estado'),
+            models.Index(fields=['clase_planilla', 'fuente_financiamiento'], name='idx_planilla_clase_fuente'),
+        ]
 
     def __str__(self):
         return f'{self.correlativo} - {self.clase_planilla} - {self.fuente_financiamiento} - {self.periodo} - {self.estado}'
@@ -122,6 +131,10 @@ class Boleta(models.Model):
         unique_together = ('contrato', 'planilla')
         verbose_name = 'Boleta'
         verbose_name_plural = 'Boletas'
+        indexes = [
+            models.Index(fields=['contrato', 'planilla'], name='idx_boleta_contrato_planilla'),
+            models.Index(fields=['visualizada', 'descargada'], name='idx_boleta_estado'),
+        ]
 
 class BoletaTransaccion(models.Model):
     boleta = models.ForeignKey(Boleta, on_delete=models.CASCADE, related_name='transacciones')
@@ -151,3 +164,8 @@ class PlanillaBeneficiario(models.Model):
         verbose_name_plural = 'Planillas de los Beneficiarios'
 
 
+auditlog.register(Contrato)
+auditlog.register(Planilla)
+auditlog.register(Boleta)
+auditlog.register(BoletaTransaccion)
+auditlog.register(PlanillaBeneficiario)

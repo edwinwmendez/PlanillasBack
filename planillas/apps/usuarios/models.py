@@ -5,6 +5,8 @@ from django.utils.translation import gettext_lazy as _
 from apps.configuracion.models import TipoDocumento, Sexo, TipoDescuento, TipoBeneficiario, Ugel, EstadoCivil
 from django.contrib.auth.models import AbstractUser
 
+from auditlog.registry import auditlog
+
 class User(AbstractUser):
     ADMINISTRADOR_DEL_SISTEMA = 'admin_sistema'
     ADMINISTRADOR_UGEL = 'admin_ugel'
@@ -43,6 +45,11 @@ class User(AbstractUser):
         help_text='Permisos específicos para este usuario.',
         verbose_name='permisos de usuario',
     )
+    class Meta:
+        indexes = [
+            models.Index(fields=['role'], name='idx_user_role'),
+            models.Index(fields=['ugel'], name='idx_user_ugel'),
+        ]
 
 
 class Persona(models.Model):
@@ -83,6 +90,10 @@ class Persona(models.Model):
         ordering = ['apellido_paterno', 'apellido_materno', 'nombres']
         verbose_name = 'Persona'
         verbose_name_plural = 'Personas'
+        indexes = [
+            models.Index(fields=['numero_documento'], name='idx_persona_documento'),
+            models.Index(fields=['apellido_paterno', 'apellido_materno', 'nombres'], name='idx_persona_nombre_completo'),
+        ]
 
 
 class Beneficiario(models.Model):
@@ -98,9 +109,7 @@ class Beneficiario(models.Model):
     documento_descuento = models.CharField(
         max_length=45, blank=True, verbose_name='Documento de Descuento'
     )
-    numero_cuenta = models.CharField(
-        max_length=20, blank=True, verbose_name='Número de Cuenta'
-    )
+    numero_cuenta = models.CharField(max_length=20, blank=True, verbose_name='Número de Cuenta')
     tipo_beneficiario = models.ForeignKey(TipoBeneficiario, on_delete=models.CASCADE, default=1, verbose_name='Tipo de Beneficiario')
     tipo_descuento = models.ForeignKey(TipoDescuento, on_delete=models.CASCADE, default=1, verbose_name='Tipo de Descuento')
     descuento_fijo = models.DecimalField(
@@ -132,6 +141,10 @@ class Beneficiario(models.Model):
         ordering = ['id']
         verbose_name = 'Beneficiario'
         verbose_name_plural = 'Beneficiarios'
+        indexes = [
+            models.Index(fields=['trabajador'], name='idx_beneficiario_trabajador'),
+            models.Index(fields=['estado'], name='idx_beneficiario_estado'),
+        ]
 
     def clean(self):
         if self.tipo_descuento.codigo == 'MF' and not self.descuento_fijo:
@@ -142,3 +155,8 @@ class Beneficiario(models.Model):
     def save(self, *args, **kwargs):
         self.clean()
         super().save(*args, **kwargs)
+
+
+auditlog.register(User)
+auditlog.register(Persona)
+auditlog.register(Beneficiario)

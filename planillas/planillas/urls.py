@@ -1,23 +1,24 @@
-# planillas/urls.py (o el archivo principal de urls del proyecto)
+# planillas/urls.py (en el archivo principal de urls del proyecto)
 from django.contrib import admin
 from django.urls import path, include, re_path
 from rest_framework import permissions
-from drf_yasg.views import get_schema_view
-from drf_yasg import openapi
+from .swagger import schema_view  # Asegúrate de que esta importación apunte correctamente a tu archivo swagger.py
 
-schema_view = get_schema_view(
-    openapi.Info(
-        title="Sistema de Planillas API",
-        default_version='v1',
-        description="Documentación de la API del Sistema de Planillas",
-    ),
-    public=True,
-    permission_classes=(permissions.AllowAny,),
+from apps.usuarios.views import CustomLoginView, CustomLogoutView, CustomUserDetail, ProtectedView
+from rest_framework_simplejwt.views import (
+    TokenObtainPairView,
+    TokenRefreshView,
 )
+
+from django.conf import settings
+from django.conf.urls.static import static
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('api/auth/', include('rest_framework.urls')),
+    path('api/auth/login/', CustomLoginView.as_view(), name='custom_login'),  # Ruta para login
+    path('api/auth/refresh/', TokenRefreshView.as_view(), name='token_refresh'),  # Ruta para refrescar token
+    path('api/auth/user/', CustomUserDetail.as_view(), name='custom_user_detail'),  # Ruta para obtener detalles del usuario autenticado
+
     path('api/configuracion/', include('apps.configuracion.urls')),
     path('api/usuarios/', include('apps.usuarios.urls')),
     path('api/trabajadores/', include('apps.trabajadores.urls')),
@@ -30,3 +31,6 @@ urlpatterns = [
     path('redoc/', schema_view.with_ui('redoc', cache_timeout=0), name='schema-redoc'),
     re_path(r'^$', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui-redirect'),
 ]
+
+if settings.DEBUG:
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

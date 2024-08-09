@@ -34,18 +34,18 @@ class BoletaAdmin(admin.ModelAdmin):
 
 
 
-from apps.procesos.services import ProcesoPlanilla
+from apps.procesos.periodo_normal import CalcularPlanillaRemuneraciones, GenerarBoletasPago
 
 @admin.action(description='Generar boletas para esta planilla')
 def generar_boletas(modeladmin, request, queryset):
     for planilla in queryset:
-        ProcesoPlanilla.generar_boletas_pago(planilla.id)
+        GenerarBoletasPago(planilla.id)
     modeladmin.message_user(request, "Boletas generadas exitosamente.")
 
 @admin.action(description='Calcular planilla de remuneraciones')
 def calcular_planilla_remuneraciones(modeladmin, request, queryset):
     for planilla in queryset:
-        ProcesoPlanilla.calcular_planilla_remuneraciones(planilla.id)
+        CalcularPlanillaRemuneraciones(planilla.id)
     modeladmin.message_user(request, "Planillas de remuneraciones calculadas exitosamente.")
 
 
@@ -61,3 +61,11 @@ class PlanillaAdmin(admin.ModelAdmin):
         queryset = super().get_queryset(request)
         queryset = queryset.select_related('clase_planilla', 'fuente_financiamiento', 'periodo')
         return queryset
+
+
+@admin.register(BoletaTransaccion)
+class BoletaTransaccionAdmin(admin.ModelAdmin):
+    list_display = ('boleta', 'tipo', 'codigo', 'descripcion', 'monto')
+    search_fields = ('boleta__numero_boleta', 'tipo', 'codigo', 'descripcion')
+    list_filter = ('tipo', 'codigo')
+    ordering = ('boleta', 'tipo', 'codigo')
